@@ -2,7 +2,7 @@ import { SyntaxError, InternalError } from "./errors.js";
 
 class Tokenizer {
   constructor(code) {
-    this.lines = code.split("\n");
+    this.lines = code.split("\n").map((line) => line.replace("\t", "    "));
     this.line = 0;
     this._col = 0;
     this.ifNextLine = false;
@@ -45,6 +45,7 @@ class Tokenizer {
       return null;
     }
 
+    const line = this.line;
     const col = this.col;
 
     // empty line
@@ -62,7 +63,7 @@ class Tokenizer {
       return {
         type: "INDENTATION",
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -85,7 +86,7 @@ class Tokenizer {
         type: "BRACKET",
         value: matchedBracket[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -99,7 +100,7 @@ class Tokenizer {
       return {
         type: "COMMA",
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -113,7 +114,7 @@ class Tokenizer {
       return {
         type: "ELLIPSIS",
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -128,7 +129,7 @@ class Tokenizer {
         type: "PARENTHESIS",
         value: matchedParenthesis[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -136,7 +137,7 @@ class Tokenizer {
 
     // KEYWORD
     const matchedKeyword =
-      /^(dla|dopóki|jeżeli|to|w przeciwnym wypadku|wykonuj|wypisz|funkcja)\b/.exec(
+      /^(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b/.exec(
         this.currentSlice
       );
     if (matchedKeyword !== null) {
@@ -146,7 +147,7 @@ class Tokenizer {
         type: "KEYWORD",
         value: matchedKeyword[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -161,7 +162,7 @@ class Tokenizer {
         type: "BOOL",
         value: matchedBool[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -176,7 +177,7 @@ class Tokenizer {
         type: "NUMBER",
         value: matchedNumber[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -214,7 +215,7 @@ class Tokenizer {
         type: "STRING",
         value: string + '"',
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -222,7 +223,7 @@ class Tokenizer {
 
     // OPERATOR
     const matchedOperator =
-      /^(==|=|<-|\+|-|\*|\/|div|mod|<|>|<=|>=|!=|oraz\b|lub\b|nie\b)/.exec(
+      /^(==|=|<-|\+|-|\*|\/|div|mod|<=|>=|<|>|!=|oraz\b|lub\b|nie\b)/.exec(
         this.currentSlice
       );
     if (matchedOperator !== null) {
@@ -232,7 +233,7 @@ class Tokenizer {
         type: "OPERATOR",
         value: matchedOperator[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
@@ -247,14 +248,14 @@ class Tokenizer {
         type: "IDENTIFIER",
         value: matchedIdentifier[0],
         position: {
-          line: this.line + 1,
+          line: line,
           column: col,
         },
       };
     }
 
     throw new InternalError(
-      "Nieoczekiwany token. Nie używaj polskich znaków w nazwach zmiennych."
+      `Nieoczekiwany token: ${this.currentSlice}. Nie używaj polskich znaków w nazwach zmiennych.`
     );
   }
 }

@@ -39,7 +39,7 @@ wypisz T`
       return variable === "PRAWDA";
     }
 
-    return variable;
+    return variable.slice(1, -1);
   };
 
   const prepareVariables = (variables) => {
@@ -67,13 +67,23 @@ wypisz T`
       const output = interpreter.execute(
         code,
         prepareVariables(variables),
-        indexingFrom0 ? 0 : 1
+        indexingFrom0 ? 0 : 1,
+        false
       );
-      setOutput(output);
+      setOutput(
+        output
+          .map((el) => {
+            if (Array.isArray(el)) {
+              return `[${el.join(", ")}]`;
+            }
+
+            return el;
+          })
+          .join("\n")
+      );
       setError(null);
     } catch (err) {
-      console.error(err);
-      const lines = code.split("\n");
+      const lines = code.split("\n").map((line) => line.replace("\t", "    "));
 
       setOutput("");
       setError({

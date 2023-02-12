@@ -2,7 +2,7 @@ import Parser from "./parser.js";
 import { RuntimeError, InternalError } from "./errors.js";
 
 class Interpreter {
-  execute(code, startingBindings = {}, firstIndex = 1) {
+  execute(code, startingBindings = {}, firstIndex = 1, ifLogOutput = true) {
     this.bindings = { ...startingBindings };
     this.callStack = [];
     this.firstIndex = firstIndex;
@@ -15,15 +15,7 @@ class Interpreter {
       this.executeStatement(statement);
     }
 
-    return this.output
-      .map((el) => {
-        if (Array.isArray(el)) {
-          return `[${el.join(", ")}]`;
-        }
-
-        return el;
-      })
-      .join("\n");
+    return this.output;
   }
 
   executeStatement(statement) {
@@ -96,7 +88,22 @@ class Interpreter {
       case "[]":
         const index =
           this.executeStatement(statement.operator.index) - this.firstIndex;
-        const result = this.executeStatement(statement.operand)[index];
+        const executedStatement = this.executeStatement(statement.operand);
+
+        if (
+          typeof executedStatement !== "string" &&
+          !Array.isArray(executedStatement)
+        ) {
+          throw new RuntimeError(
+            `Zmienna ${statement.operand.symbol} nie jest tablicą ani napisem.`,
+            statement.position
+          );
+        }
+
+        const result =
+          typeof executedStatement === "string"
+            ? executedStatement.charAt(index)
+            : executedStatement[index];
 
         if (result === undefined) {
           throw new RuntimeError(
@@ -196,12 +203,32 @@ class Interpreter {
   }
 
   executeAssignment(statement) {
+    const bindings =
+      this.callStack.length > 0
+        ? this.callStack.at(-1).bindings
+        : this.bindings;
+
     if (statement.identifier.type === "ArrayIdentifier") {
-      this.bindings[statement.identifier.symbol][
-        this.executeStatement(statement.identifier.index) - this.firstIndex
-      ] = this.executeStatement(statement.rightOperand);
+      if (!(statement.identifier.symbol in bindings)) {
+        bindings[statement.identifier.symbol] = [];
+      }
+
+      const index =
+        this.executeStatement(statement.identifier.index) - this.firstIndex;
+      if (index < 0) {
+        throw new RuntimeError(
+          `Indeks ${index + this.firstIndex} poza długością tablicy ${
+            statement.identifier.symbol
+          }.`,
+          statement.identifier.index.position
+        );
+      }
+
+      bindings[statement.identifier.symbol][index] = this.executeStatement(
+        statement.rightOperand
+      );
     } else if (statement.identifier.type === "Identifier") {
-      this.bindings[statement.identifier.symbol] = this.executeStatement(
+      bindings[statement.identifier.symbol] = this.executeStatement(
         statement.rightOperand
       );
     } else {
@@ -273,6 +300,8 @@ class Interpreter {
 
     if (condition) {
       this.executeStatement(statement.body);
+    } else if (statement.else !== undefined) {
+      this.executeStatement(statement.else.body);
     }
   }
 
@@ -300,6 +329,13 @@ class Interpreter {
       );
     }
 
+    if (binding.parameters.parameters.length !== statement.arguments.length) {
+      throw new RuntimeError(
+        `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${binding.parameters.parameters.length}, otrzymała liczbę argumentów: ${statement.arguments.length}.`,
+        statement.position
+      );
+    }
+
     const localBindings = {
       bindings: statement.arguments.reduce((acc, curr, idx) => {
         acc[binding.parameters.parameters[idx].symbol] =
@@ -308,20 +344,19 @@ class Interpreter {
       }, {}),
     };
 
-    if (binding.parameters.parameters.length !== statement.arguments.length) {
-      throw new RuntimeError(
-        `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${binding.parameters.parameters.length}, otrzymała liczbę argumentów: ${statement.arguments.length}.`,
-        statement.position
-      );
-    }
-
     this.callStack.push(localBindings);
     this.executeStatement(binding.body);
     this.callStack.pop();
   }
 
   executePrint(statement) {
-    this.output.push(this.executeStatement(statement.value));
+    const output = this.executeStatement(statement.value);
+
+    if (this.ifLogOutput) {
+      console.log(output);
+    }
+
+    this.output.push(output);
   }
 }
 

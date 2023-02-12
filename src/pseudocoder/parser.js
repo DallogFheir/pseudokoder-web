@@ -91,12 +91,9 @@ class Parser {
   blockStatementProduction() {
     this.indentationLevel++;
 
-    const setBacks = [];
     const statements = [];
-    let consumedIndentations = 0;
     while (this.lookahead !== null && this.lookahead.type === "INDENTATION") {
-      consumedIndentations = 0;
-      setBacks.push(this.lookahead.position);
+      let consumedIndentations = 0;
       for (let i = 0; i < this.indentationLevel; i++) {
         if (this.lookahead.type !== "INDENTATION") {
           break;
@@ -105,18 +102,12 @@ class Parser {
         this.consume("INDENTATION");
         consumedIndentations++;
       }
-      statements.push(this.statementProduction());
-    }
-    if (
-      consumedIndentations !== 0 &&
-      consumedIndentations < this.indentationLevel
-    ) {
-      const diff = this.indentationLevel - consumedIndentations;
-      statements.splice(-diff, diff);
 
-      const setBack = setBacks.at(-diff);
-      this.tokenizer.setBack(setBack.line, setBack.column);
-      this.lookahead = this.tokenizer.getNextToken();
+      if (consumedIndentations === this.indentationLevel - 1) {
+        break;
+      }
+
+      statements.push(this.statementProduction());
     }
 
     this.indentationLevel--;
@@ -140,13 +131,22 @@ class Parser {
     const firstParen = this.consume("PARENTHESIS");
 
     const argumentList = [];
+    let consumedComma;
     while (this.lookahead.type !== "PARENTHESIS") {
+      consumedComma = false;
       argumentList.push(this.expressionProduction());
 
       if (this.lookahead.type !== "PARENTHESIS") {
+        consumedComma = true;
         this.consume("COMMA");
       }
     }
+
+    if (consumedComma) {
+      this.expressionProduction();
+    }
+
+    this.consume("PARENTHESIS");
 
     return {
       type: "Call",
@@ -229,9 +229,23 @@ class Parser {
           tokens.push(this.identifierProduction());
           break;
         case "PARENTHESIS":
+          if (this.lookahead.value === ")") {
+            throw new SyntaxError(
+              "Oczekiwano wyrażenia, znaleziono: ).",
+              this.lookahead.position
+            );
+          }
+
           tokens.push(this.parenthesisProduction());
           break;
         case "BRACKET":
+          if (this.lookahead.value === "]") {
+            throw new SyntaxError(
+              "Oczekiwano wyrażenia, znaleziono: ].",
+              this.lookahead.position
+            );
+          }
+
           tokens.push(this.bracketProduction());
           break;
         default:
@@ -247,6 +261,13 @@ class Parser {
       !(this.lookahead.type === "BRACKET" && this.lookahead.value === "]") &&
       !(this.lookahead.type === "PARENTHESIS" && this.lookahead.value === ")")
     );
+
+    if (tokens.length === 0) {
+      throw new SyntaxError(
+        `Oczekiwano wyrażenia, znaleziono: ${this.lookahead.type}.`,
+        this.lookahead.position
+      );
+    }
 
     return this._parseParens(tokens);
   }
@@ -446,8 +467,9 @@ class Parser {
         return this.whileLoopProduction();
       case "jeżeli":
         return this.ifProduction();
-      case "w przeciwnym wypadku":
-        return this.elseProduction();
+      case "w przeciwnym razie":
+        this.consume("KEYWORD");
+        break;
       case "funkcja":
         return this.functionProduction();
       case "wypisz":
@@ -516,12 +538,33 @@ class Parser {
     this.consume("KEYWORD");
     const body = this.blockStatementProduction();
 
-    return {
+    let elseBlock;
+    if (
+      this.lookahead !== null &&
+      this.lookahead.value === "w przeciwnym razie"
+    ) {
+      const elseKeyword = this.consume("KEYWORD");
+      const elseBody = this.blockStatementProduction();
+
+      elseBlock = {
+        type: "Else",
+        body: elseBody,
+        position: elseKeyword.position,
+      };
+    }
+
+    const ifBlock = {
       type: "If",
       condition: expression,
       body,
       position: _if.position,
     };
+
+    if (elseBlock !== undefined) {
+      ifBlock.else = elseBlock;
+    }
+
+    return ifBlock;
   }
 
   parameterListProduction() {
