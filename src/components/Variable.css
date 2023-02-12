@@ -11,6 +11,6 @@
   border-radius: 20px;
 }
 
-.variable-label {
-  margin: 10px;
+.variable-form-control {
+  width: 150px;
 }

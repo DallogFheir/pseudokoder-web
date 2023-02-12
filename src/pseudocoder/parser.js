@@ -78,7 +78,7 @@ class Parser {
 
     switch (this.lookahead.type) {
       case "IDENTIFIER":
-        return this.assignmentStatementProduction();
+        return this.assignmentOrCallProduction();
       case "KEYWORD":
         return this.keywordProduction();
       default:
@@ -126,11 +126,43 @@ class Parser {
     };
   }
 
-  assignmentStatementProduction() {
+  assignmentOrCallProduction() {
+    const identifier = this.consume("IDENTIFIER");
+
+    if (this.lookahead.type === "PARENTHESIS") {
+      return this.callProduction(identifier);
+    }
+
+    return this.assignmentStatementProduction(identifier);
+  }
+
+  callProduction(identifier) {
+    const firstParen = this.consume("PARENTHESIS");
+
+    const argumentList = [];
+    while (this.lookahead.type !== "PARENTHESIS") {
+      argumentList.push(this.expressionProduction());
+
+      if (this.lookahead.type !== "PARENTHESIS") {
+        this.consume("COMMA");
+      }
+    }
+
+    return {
+      type: "Call",
+      identifier: {
+        type: "Identifier",
+        symbol: identifier.value,
+        position: identifier.position,
+      },
+      arguments: argumentList,
+      position: firstParen.position,
+    };
+  }
+
+  assignmentStatementProduction(identifier) {
     let isArray = false;
     let bracket;
-
-    const identifier = this.consume("IDENTIFIER");
 
     if (this.lookahead === null) {
       this.tokenizer.col--;
@@ -212,7 +244,8 @@ class Parser {
       !this.ifNextLine &&
       this.lookahead.type !== "KEYWORD" &&
       this.lookahead.type !== "COMMA" &&
-      !(this.lookahead.type === "BRACKET" && this.lookahead.value === "]")
+      !(this.lookahead.type === "BRACKET" && this.lookahead.value === "]") &&
+      !(this.lookahead.type === "PARENTHESIS" && this.lookahead.value === ")")
     );
 
     return this._parseParens(tokens);
@@ -415,6 +448,8 @@ class Parser {
         return this.ifProduction();
       case "w przeciwnym wypadku":
         return this.elseProduction();
+      case "funkcja":
+        return this.functionProduction();
       case "wypisz":
         return this.printProduction();
       default:
@@ -486,6 +521,46 @@ class Parser {
       condition: expression,
       body,
       position: _if.position,
+    };
+  }
+
+  parameterListProduction() {
+    const firstParen = this.consume("PARENTHESIS");
+
+    const parameterList = [];
+    while (this.lookahead.type !== "PARENTHESIS") {
+      parameterList.push(this.identifierProduction());
+
+      if (this.lookahead.type !== "PARENTHESIS") {
+        this.consume("COMMA");
+      }
+    }
+
+    this.consume("PARENTHESIS");
+
+    return {
+      type: "ParameterList",
+      parameters: parameterList,
+      position: firstParen.position,
+    };
+  }
+
+  functionProduction() {
+    const functionKeyword = this.consume("KEYWORD");
+    const functionName = this.consume("IDENTIFIER");
+    const parameters = this.parameterListProduction();
+    const body = this.blockStatementProduction();
+
+    return {
+      type: "Function",
+      identifier: {
+        type: "Identifier",
+        symbol: functionName.value,
+        position: functionName.position,
+      },
+      parameters,
+      body,
+      position: functionKeyword.position,
     };
   }
 

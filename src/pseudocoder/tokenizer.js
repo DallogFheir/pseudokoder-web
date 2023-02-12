@@ -136,7 +136,7 @@ class Tokenizer {
 
     // KEYWORD
     const matchedKeyword =
-      /^(dla|dopóki|jeżeli|to|w przeciwnym wypadku|wykonuj|wypisz)\b/.exec(
+      /^(dla|dopóki|jeżeli|to|w przeciwnym wypadku|wykonuj|wypisz|funkcja)\b/.exec(
         this.currentSlice
       );
     if (matchedKeyword !== null) {

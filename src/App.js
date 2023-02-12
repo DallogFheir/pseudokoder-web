@@ -18,13 +18,13 @@ function App() {
     `dla i = 1, 2, ..., n - 2 wykonuj
      dla j = 1, 2, ..., n - i wykonuj
         jeżeli T[j] > T[j + 1] to
-            temp ← T[j]
-            T[j] ← T[j + 1]
-            T[j + 1] ← temp
+            temp <- T[j]
+            T[j] <- T[j + 1]
+            T[j + 1] <- temp
 wypisz T`
   );
   const [variables, setVariables] = useLocalStorage("variables", [
-    { identifier: "n", type: "variable", value: "9" },
+    { identifier: "n", type: "variable", value: "10" },
     { identifier: "T", type: "array", value: "1, 10, 4, 1, 2, 3, 1, 2, 11, 5" },
   ]);
 
@@ -72,6 +72,7 @@ wypisz T`
       setOutput(output);
       setError(null);
     } catch (err) {
+      console.error(err);
       const lines = code.split("\n");
 
       setOutput("");
@@ -93,7 +94,7 @@ wypisz T`
       <div className="container-side">
         <Variables variables={variables} setVariables={setVariables} />
         <div className="mt-5 container-misc">
-          <label className="form-label" htmlFor="indexing-checkbox">
+          <label className="form-label fw-bold" htmlFor="indexing-checkbox">
             Indeksowanie tablic od 0
           </label>
           <input
@@ -106,7 +107,7 @@ wypisz T`
         </div>
         <div className="container-misc">
           <button
-            className="mt-4 btn btn-primary btn-execute"
+            className="mt-4 btn btn-primary btn-execute fw-bold"
             type="button"
             onClick={execute}
           >

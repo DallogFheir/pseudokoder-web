@@ -4,6 +4,7 @@ import { RuntimeError, InternalError } from "./errors.js";
 class Interpreter {
   execute(code, startingBindings = {}, firstIndex = 1) {
     this.bindings = { ...startingBindings };
+    this.callStack = [];
     this.firstIndex = firstIndex;
     this.output = [];
 
@@ -54,6 +55,12 @@ class Interpreter {
       case "If":
         this.executeIf(statement);
         break;
+      case "Function":
+        this.executeFunction(statement);
+        break;
+      case "Call":
+        this.executeCall(statement);
+        break;
       case "PrintStatement":
         this.executePrint(statement);
         break;
@@ -63,14 +70,19 @@ class Interpreter {
   }
 
   executeIdentifier(statement) {
-    if (!(statement.symbol in this.bindings)) {
+    const bindings =
+      this.callStack.length > 0
+        ? this.callStack.at(-1).bindings
+        : this.bindings;
+
+    if (!(statement.symbol in bindings)) {
       throw new RuntimeError(
         `Nieznana zmienna: ${statement.symbol}.`,
         statement.position
       );
     }
 
-    return this.bindings[statement.symbol];
+    return bindings[statement.symbol];
   }
 
   executeLiteral(statement) {
@@ -262,6 +274,50 @@ class Interpreter {
     if (condition) {
       this.executeStatement(statement.body);
     }
+  }
+
+  executeFunction(statement) {
+    this.bindings[statement.identifier.symbol] = {
+      parameters: statement.parameters,
+      body: statement.body,
+    };
+  }
+
+  executeCall(statement) {
+    if (!(statement.identifier.symbol in this.bindings)) {
+      throw new RuntimeError(
+        `Nieznana zmienna: ${statement.identifier.symbol}.`,
+        statement.identifier.position
+      );
+    }
+
+    const binding = this.bindings[statement.identifier.symbol];
+
+    if (typeof binding !== "object") {
+      throw new RuntimeError(
+        `Zmienna ${statement.identifier.symbol} nie jest funkcją.`,
+        statement.position
+      );
+    }
+
+    const localBindings = {
+      bindings: statement.arguments.reduce((acc, curr, idx) => {
+        acc[binding.parameters.parameters[idx].symbol] =
+          this.executeStatement(curr);
+        return acc;
+      }, {}),
+    };
+
+    if (binding.parameters.parameters.length !== statement.arguments.length) {
+      throw new RuntimeError(
+        `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${binding.parameters.parameters.length}, otrzymała liczbę argumentów: ${statement.arguments.length}.`,
+        statement.position
+      );
+    }
+
+    this.callStack.push(localBindings);
+    this.executeStatement(binding.body);
+    this.callStack.pop();
   }
 
   executePrint(statement) {
