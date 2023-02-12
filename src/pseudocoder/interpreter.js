@@ -11,6 +11,8 @@ class Interpreter {
     const parser = new Parser();
     const ast = parser.parse(code);
 
+    console.log(ast);
+
     for (const statement of ast.body.statements) {
       this.executeStatement(statement);
     }
@@ -70,7 +72,8 @@ class Interpreter {
     if (!(statement.symbol in bindings)) {
       throw new RuntimeError(
         `Nieznana zmienna: ${statement.symbol}.`,
-        statement.position
+        statement.position,
+        this.output
       );
     }
 
@@ -96,7 +99,8 @@ class Interpreter {
         ) {
           throw new RuntimeError(
             `Zmienna ${statement.operand.symbol} nie jest tablicą ani napisem.`,
-            statement.position
+            statement.position,
+            this.output
           );
         }
 
@@ -111,7 +115,8 @@ class Interpreter {
             {
               line: statement.operator.position.line,
               column: statement.operator.position.column + 1,
-            }
+            },
+            this.output
           );
         }
 
@@ -220,7 +225,8 @@ class Interpreter {
           `Indeks ${index + this.firstIndex} poza długością tablicy ${
             statement.identifier.symbol
           }.`,
-          statement.identifier.index.position
+          statement.identifier.index.position,
+          this.output
         );
       }
 
@@ -244,7 +250,8 @@ class Interpreter {
       if (typeof condition !== "boolean") {
         throw new RuntimeError(
           "Wyrażenie pętli DOPÓKI musi ewaluować do wartości PRAWDA/FAŁSZ.",
-          statement.position
+          statement.position,
+          this.output
         );
       }
 
@@ -253,6 +260,11 @@ class Interpreter {
   }
 
   executeForLoop(statement) {
+    const bindings =
+      this.callStack.length > 0
+        ? this.callStack.at(-1).bindings
+        : this.bindings;
+
     const start = this.executeStatement(statement.start);
     const second = this.executeStatement(statement.second);
     const end = this.executeStatement(statement.end);
@@ -263,12 +275,13 @@ class Interpreter {
       if (end < start) {
         throw new RuntimeError(
           "Wyrażenie końcowe pętli DLA musi być większe lub równe początkowemu przy dodatnim kroku.",
-          statement.position
+          statement.position,
+          this.output
         );
       }
 
       for (let i = start; i <= end; i += step) {
-        this.bindings[statement.identifier.symbol] = i;
+        bindings[statement.identifier.symbol] = i;
 
         this.executeStatement(statement.body);
       }
@@ -276,12 +289,13 @@ class Interpreter {
       if (end > start) {
         throw new RuntimeError(
           "Wyrażenie końcowe pętli DLA musi być mniejsze lub równe początkowemu przy ujemnym kroku.",
-          statement.position
+          statement.position,
+          this.output
         );
       }
 
       for (let i = start; i >= end; i += step) {
-        this.bindings[statement.identifier.symbol] = i;
+        bindings[statement.identifier.symbol] = i;
 
         this.executeStatement(statement.body);
       }
@@ -294,7 +308,8 @@ class Interpreter {
     if (typeof condition !== "boolean") {
       throw new RuntimeError(
         "Wyrażenie bloku JEŻELI musi ewaluować do wartości PRAWDA/FAŁSZ.",
-        statement.condition.position
+        statement.condition.position,
+        this.output
       );
     }
 
@@ -316,7 +331,8 @@ class Interpreter {
     if (!(statement.identifier.symbol in this.bindings)) {
       throw new RuntimeError(
         `Nieznana zmienna: ${statement.identifier.symbol}.`,
-        statement.identifier.position
+        statement.identifier.position,
+        this.output
       );
     }
 
@@ -325,14 +341,16 @@ class Interpreter {
     if (typeof binding !== "object") {
       throw new RuntimeError(
         `Zmienna ${statement.identifier.symbol} nie jest funkcją.`,
-        statement.position
+        statement.position,
+        this.output
       );
     }
 
     if (binding.parameters.parameters.length !== statement.arguments.length) {
       throw new RuntimeError(
         `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${binding.parameters.parameters.length}, otrzymała liczbę argumentów: ${statement.arguments.length}.`,
-        statement.position
+        statement.position,
+        this.output
       );
     }
 

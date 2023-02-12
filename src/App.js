@@ -84,8 +84,19 @@ wypisz T`
       setError(null);
     } catch (err) {
       const lines = code.split("\n").map((line) => line.replace("\t", "    "));
+      const output =
+        err.output &&
+        err.output
+          .map((el) => {
+            if (Array.isArray(el)) {
+              return `[${el.join(", ")}]`;
+            }
 
-      setOutput("");
+            return el;
+          })
+          .join("\n");
+
+      setOutput(output || "");
       setError({
         lines,
         line: err.line,

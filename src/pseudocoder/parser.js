@@ -16,10 +16,10 @@ class Parser {
     return this.programProduction();
   }
 
-  consume(type) {
+  consume(type, expected = null) {
     if (this.lookahead === null) {
       throw new SyntaxError(
-        `Nieoczekiwany koniec wejścia, oczekiwano ${type}.`,
+        `Nieoczekiwany koniec wejścia, oczekiwano ${expected ?? type}.`,
         {
           line: this.tokenizer.line,
           column: this.tokenizer.col,
@@ -29,7 +29,9 @@ class Parser {
 
     if (this.lookahead.type !== type) {
       throw new SyntaxError(
-        `Nieoczekiwany token: ${this.lookahead.type}, oczekiwano: ${type}.`,
+        `Nieoczekiwany token: ${this.lookahead.type}, oczekiwano: ${
+          expected ?? type
+        }.`,
         this.lookahead.position
       );
     }
@@ -91,23 +93,30 @@ class Parser {
   blockStatementProduction() {
     this.indentationLevel++;
 
+    debugger;
     const statements = [];
-    while (this.lookahead !== null && this.lookahead.type === "INDENTATION") {
-      let consumedIndentations = 0;
+    let continueLoop = true;
+    while (
+      this.lookahead !== null &&
+      this.lookahead.type === "INDENTATION" &&
+      continueLoop
+    ) {
+      const setBack = this.lookahead.position;
+
       for (let i = 0; i < this.indentationLevel; i++) {
         if (this.lookahead.type !== "INDENTATION") {
+          continueLoop = false;
+          this.tokenizer.setBack(setBack.line, setBack.column);
+          this.lookahead = this.tokenizer.getNextToken();
           break;
         }
 
         this.consume("INDENTATION");
-        consumedIndentations++;
       }
 
-      if (consumedIndentations === this.indentationLevel - 1) {
-        break;
+      if (continueLoop) {
+        statements.push(this.statementProduction());
       }
-
-      statements.push(this.statementProduction());
     }
 
     this.indentationLevel--;
@@ -535,7 +544,7 @@ class Parser {
   ifProduction() {
     const _if = this.consume("KEYWORD");
     const expression = this.expressionProduction();
-    this.consume("KEYWORD");
+    this.consume("KEYWORD", "to");
     const body = this.blockStatementProduction();
 
     let elseBlock;

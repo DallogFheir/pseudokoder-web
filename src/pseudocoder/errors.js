@@ -10,7 +10,12 @@ class PseudocoderError extends Error {
 
 class SyntaxError extends PseudocoderError {}
 
-class RuntimeError extends PseudocoderError {}
+class RuntimeError extends PseudocoderError {
+  constructor(message, position, output) {
+    super(message, position);
+    this.output = output;
+  }
+}
 
 class InternalError extends Error {}
 
