@@ -1,0 +1,262 @@
+import { SyntaxError, InternalError } from "./errors.js";
+
+class Tokenizer {
+  constructor(code) {
+    this.lines = code.split("\n");
+    this.line = 0;
+    this._col = 0;
+    this.ifNextLine = false;
+  }
+
+  get col() {
+    return this._col;
+  }
+
+  set col(value) {
+    if (value === -1) {
+      this.line--;
+      this._col = this.lines[this.line].length;
+      this.ifNextLine = false;
+    } else if (this.lines[this.line].length <= value) {
+      this.line++;
+      this._col = 0;
+      this.ifNextLine = true;
+    } else {
+      this._col = value;
+      this.ifNextLine = false;
+    }
+  }
+
+  get currentSlice() {
+    return this.lines[this.line].slice(this.col);
+  }
+
+  setBack(line, col) {
+    this.line = line;
+    this.col = col;
+  }
+
+  hasMoreTokens() {
+    return this.line !== this.lines.length && this.lines[0] !== "";
+  }
+
+  getNextToken() {
+    if (!this.hasMoreTokens()) {
+      return null;
+    }
+
+    const col = this.col;
+
+    // empty line
+    if (this.lines[this.line].trim() === "") {
+      this.col += 1;
+
+      return this.getNextToken();
+    }
+
+    // indentation
+    const matchedIndentation = /^(\t|    )/.exec(this.currentSlice);
+    if (matchedIndentation !== null) {
+      this.col += matchedIndentation[0].length;
+
+      return {
+        type: "INDENTATION",
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // whitespace or comment
+    const matchedWhitespace = /^\s+|^#.*$/.exec(this.currentSlice);
+    if (matchedWhitespace !== null) {
+      this.col += matchedWhitespace[0].length;
+
+      return this.getNextToken();
+    }
+
+    // BRACKET
+    const matchedBracket = /^(\[|\])/.exec(this.currentSlice);
+    if (matchedBracket !== null) {
+      this.col += matchedBracket[0].length;
+
+      return {
+        type: "BRACKET",
+        value: matchedBracket[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // COMMA
+    const matchedComma = /^,/.exec(this.currentSlice);
+    if (matchedComma !== null) {
+      this.col += matchedComma[0].length;
+
+      return {
+        type: "COMMA",
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // ELLIPSIS
+    const matchedEllipsis = /^\.\.\./.exec(this.currentSlice);
+    if (matchedEllipsis !== null) {
+      this.col += matchedEllipsis[0].length;
+
+      return {
+        type: "ELLIPSIS",
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // PARENTHESIS
+    const matchedParenthesis = /^(\(|\))/.exec(this.currentSlice);
+    if (matchedParenthesis !== null) {
+      this.col += matchedParenthesis[0].length;
+
+      return {
+        type: "PARENTHESIS",
+        value: matchedParenthesis[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // KEYWORD
+    const matchedKeyword =
+      /^(dla|dopóki|jeżeli|to|w przeciwnym wypadku|wykonuj|wypisz)\b/.exec(
+        this.currentSlice
+      );
+    if (matchedKeyword !== null) {
+      this.col += matchedKeyword[0].length;
+
+      return {
+        type: "KEYWORD",
+        value: matchedKeyword[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // BOOL
+    const matchedBool = /^(PRAWDA|FAŁSZ)\b/.exec(this.currentSlice);
+    if (matchedBool !== null) {
+      this.col += matchedBool[0].length;
+
+      return {
+        type: "BOOL",
+        value: matchedBool[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // NUMBER
+    const matchedNumber = /^-?\d+\b/.exec(this.currentSlice);
+    if (matchedNumber !== null) {
+      this.col += matchedNumber[0].length;
+
+      return {
+        type: "NUMBER",
+        value: matchedNumber[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // STRING
+    if (this.currentSlice[0] === '"') {
+      let string = '"';
+      this.col++;
+      while (this.currentSlice[0] !== '"') {
+        string += this.currentSlice[0];
+        this.col++;
+
+        if (this.ifNextLine) {
+          if (!this.hasMoreTokens()) {
+            this.col--;
+            throw new SyntaxError(
+              "Nieoczekiwany koniec wejścia. Oczekiwano zamknięcia napisu.",
+              this.line,
+              this.col
+            );
+          }
+
+          this.col--;
+          throw new SyntaxError(
+            "Nieoczekiwany koniec linii. Oczekiwano zamknięcia napisu.",
+            this.line,
+            this.col
+          );
+        }
+      }
+
+      this.col++;
+      return {
+        type: "STRING",
+        value: string + '"',
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // OPERATOR
+    const matchedOperator =
+      /^(==|=|<-|\+|-|\*|\/|div|mod|<|>|<=|>=|!=|oraz\b|lub\b|nie\b)/.exec(
+        this.currentSlice
+      );
+    if (matchedOperator !== null) {
+      this.col += matchedOperator[0].length;
+
+      return {
+        type: "OPERATOR",
+        value: matchedOperator[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    // IDENTIFIER
+    const matchedIdentifier = /^[_a-zA-Z][_a-zA-Z0-9]*/.exec(this.currentSlice);
+    if (matchedIdentifier !== null) {
+      this.col += matchedIdentifier[0].length;
+
+      return {
+        type: "IDENTIFIER",
+        value: matchedIdentifier[0],
+        position: {
+          line: this.line + 1,
+          column: col,
+        },
+      };
+    }
+
+    throw new InternalError(
+      "Nieoczekiwany token. Nie używaj polskich znaków w nazwach zmiennych."
+    );
+  }
+}
+
+export default Tokenizer;

@@ -1,0 +1,31 @@
+.editor {
+  display: flex;
+  padding: 40px;
+  max-height: 500px;
+  overflow-y: hidden;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.editor-numbers {
+  color: white;
+  background-color: #333;
+  font-weight: bold;
+  font-size: 1.5rem;
+  margin-right: 10px;
+  overflow-y: hidden;
+  line-height: 25px;
+  border: none;
+  outline: none;
+  resize: none;
+}
+
+.editor-textarea {
+  color: white;
+  background-color: #454545;
+  overflow-y: hidden;
+  line-height: 25px;
+  font-size: 1.5rem;
+  border: none;
+  outline: none;
+  resize: none;
+}

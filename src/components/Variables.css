@@ -1,0 +1,14 @@
+.container-variables {
+  margin: 0 50px;
+  padding: 20px;
+  width: 500px;
+  height: 500px;
+  text-align: center;
+  overflow-y: hidden;
+}
+
+.variables {
+  padding: 0 0 100px 0;
+  height: 600px;
+  overflow-y: scroll;
+}
