@@ -6,6 +6,7 @@ class Parser {
     this.ifNextLine = false;
     this.indentationLevel = 0;
     this.definingFunction = false;
+    this.consumingCall = false;
     this.tokenTrans = {
       INDENTATION: "wcięcie",
       IDENTIFIER: "zmienna",
@@ -129,7 +130,7 @@ class Parser {
         this.consume("INDENTATION");
       }
 
-      if (continueLoop) {
+      if (continueLoop && this.lookahead.type !== "INDENTATION") {
         statements.push(this.statementProduction());
       }
     }
@@ -152,6 +153,7 @@ class Parser {
   }
 
   callProduction(identifier) {
+    this.consumingCall = true;
     const firstParen = this.consume("PARENTHESIS");
 
     const argumentList = [];
@@ -172,6 +174,7 @@ class Parser {
 
     this.consume("PARENTHESIS");
 
+    this.consumingCall = false;
     return {
       type: "Call",
       identifier: {
@@ -248,6 +251,7 @@ class Parser {
       );
     }
 
+    let parensNumber = 0;
     do {
       switch (this.lookahead.type) {
         case "NUMBER":
@@ -262,14 +266,18 @@ class Parser {
           tokens.push(this.identifierProduction());
           break;
         case "PARENTHESIS":
-          if (this.lookahead.value === ")") {
-            throw new SyntaxError(
-              "Oczekiwano wyrażenia, znaleziono: ).",
-              this.lookahead.position
-            );
+          if (this.lookahead.value === "(") {
+            parensNumber++;
+          } else {
+            parensNumber--;
           }
 
-          if (tokens.at(-1).type === "Identifier") {
+          if (
+            this.lookahead.value === "(" &&
+            tokens.length > 0 &&
+            tokens.at(-1).type === "Identifier"
+          ) {
+            parensNumber--;
             tokens.push(this.callProduction(tokens.pop()));
           } else {
             tokens.push(this.parenthesisProduction());
@@ -294,15 +302,31 @@ class Parser {
       }
     } while (
       !this.ifNextLine &&
+      this.lookahead !== null &&
       this.lookahead.type !== "KEYWORD" &&
       this.lookahead.type !== "COMMA" &&
       !(this.lookahead.type === "BRACKET" && this.lookahead.value === "]") &&
-      !(this.lookahead.type === "PARENTHESIS" && this.lookahead.value === ")")
+      !(
+        this.consumingCall &&
+        this.lookahead.type === "PARENTHESIS" &&
+        this.lookahead.value === ")"
+      )
     );
 
     if (tokens.length === 0) {
       throw new SyntaxError(
-        `Oczekiwano wyrażenia, znaleziono: ${this.lookahead.type}.`,
+        `Oczekiwano wyrażenia, znaleziono: ${
+          this.tokenTrans[this.lookahead.type]
+        }.`,
+        this.lookahead.position
+      );
+    }
+
+    if (parensNumber !== 0 && !this.consumingCall) {
+      throw new SyntaxError(
+        `Oczekiwano zamknięcia nawiasu okrągłego, znaleziono: ${
+          this.tokenTrans[this.lookahead.type]
+        }.`,
         this.lookahead.position
       );
     }
@@ -356,7 +380,7 @@ class Parser {
           tokens.find((el) => el.symbol === operator)
         )
       ) {
-        for (let i = 1; i < tokens.length; i++) {
+        for (let i = 0; i < tokens.length; i++) {
           if (operators.includes(tokens[i].symbol)) {
             if (tokens[i].symbol === "nie") {
               const unOp = this.unaryOperationProduction(
@@ -381,6 +405,18 @@ class Parser {
             }
             break;
           }
+        }
+      }
+    }
+
+    if (tokens.length > 1) {
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        if (token.type === "Identifier" && i % 2 == 1) {
+          throw new SyntaxError(
+            `Nieoczekiwana zmienna: ${token.symbol}.`,
+            token.position
+          );
         }
       }
     }
@@ -429,7 +465,7 @@ class Parser {
 
     return {
       type: "NumericLiteral",
-      value: Number(token.value),
+      value: parseFloat(token.value),
       position: token.position,
     };
   }
@@ -524,12 +560,12 @@ class Parser {
   forLoopProduction() {
     const forKeyword = this.consume("KEYWORD");
     const identifier = this.consume("IDENTIFIER");
-    const operator = this.consume("OPERATOR");
+    const equalsKeyword = this.consume("KEYWORD");
 
-    if (operator.value !== "=") {
+    if (equalsKeyword.value !== "=") {
       throw new SyntaxError(
-        `Nieoczekiwany operator: ${operator.value}, oczekiwano: =.`,
-        operator.position
+        `Nieoczekiwane słowo kluczowe: ${equalsKeyword.value}, oczekiwano: =.`,
+        equalsKeyword.position
       );
     }
 

@@ -1,4 +1,4 @@
-import { SyntaxError, InternalError } from "./errors.js";
+import { SyntaxError } from "./errors.js";
 
 class Tokenizer {
   constructor(code) {
@@ -137,7 +137,7 @@ class Tokenizer {
 
     // KEYWORD
     const matchedKeyword =
-      /^(<-|zwróć |(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b)/.exec(
+      /^(<-|=|zwróć |(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b)/.exec(
         this.currentSlice
       );
     if (matchedKeyword !== null) {
@@ -169,7 +169,7 @@ class Tokenizer {
     }
 
     // NUMBER
-    const matchedNumber = /^-?\d+\b/.exec(this.currentSlice);
+    const matchedNumber = /^-?\d+(\.\d+)?\b/.exec(this.currentSlice);
     if (matchedNumber !== null) {
       this.col += matchedNumber[0].length;
 
@@ -223,7 +223,7 @@ class Tokenizer {
 
     // OPERATOR
     const matchedOperator =
-      /^(==|=|\+|-|\*|\/|div\b|mod\b|<=|>=|<|>|!=|oraz\b|lub\b|nie\b)/.exec(
+      /^(==|\+|-|\*|\/|div\b|mod\b|<=|>=|<|>|!=|oraz\b|lub\b|nie\b)/.exec(
         this.currentSlice
       );
     if (matchedOperator !== null) {
@@ -254,8 +254,12 @@ class Tokenizer {
       };
     }
 
-    throw new InternalError(
-      `Nieoczekiwany token: ${this.currentSlice}. Nie używaj polskich znaków w nazwach zmiennych.`
+    throw new SyntaxError(
+      `Nieoczekiwany token: ${this.currentSlice}. Nie używaj polskich znaków w nazwach zmiennych.`,
+      {
+        line: this.line,
+        column: this.col,
+      }
     );
   }
 }

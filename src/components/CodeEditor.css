@@ -25,6 +25,8 @@
   color: white;
   background-color: #454545;
   padding: 10px;
+  white-space: pre;
+  overflow-x: scroll;
   overflow-y: hidden;
   line-height: 25px;
   font-size: 1.5rem;

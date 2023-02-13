@@ -48,11 +48,9 @@ wypisz T`
     const result = {};
 
     for (const variable of variables) {
-      const possibleArray = variable.value.split(",");
-      if (possibleArray.length > 1) {
-        result[variable.identifier] = possibleArray.map((el) =>
-          parseVariable(el)
-        );
+      if (variable.type === "array") {
+        const array = variable.value.split(",").filter((el) => el !== "");
+        result[variable.identifier] = array.map((el) => parseVariable(el));
         continue;
       }
 

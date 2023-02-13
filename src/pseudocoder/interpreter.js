@@ -38,7 +38,6 @@ class Interpreter {
 
     const parser = new Parser();
     const ast = parser.parse(code);
-    console.log(ast);
 
     for (const statement of ast.body.statements) {
       this.executeStatement(statement);
@@ -170,13 +169,12 @@ class Interpreter {
 
   executeBinaryOperation(statement) {
     const leftOperand = this.executeStatement(statement.leftOperand);
-    const rightOperand = this.executeStatement(statement.rightOperand);
 
     switch (statement.operator.symbol) {
       case "+":
         if (
           typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          typeof this.executeStatement(statement.rightOperand) !== "number"
         ) {
           throw new RuntimeError(
             "Operacje arytmetyczne można wykonywać tylko na liczbach.",
@@ -184,11 +182,11 @@ class Interpreter {
           );
         }
 
-        return leftOperand + rightOperand;
+        return leftOperand + this.executeStatement(statement.rightOperand);
       case "-":
         if (
           typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          typeof this.executeStatement(statement.rightOperand) !== "number"
         ) {
           throw new RuntimeError(
             "Operacje arytmetyczne można wykonywać tylko na liczbach.",
@@ -196,11 +194,11 @@ class Interpreter {
           );
         }
 
-        return leftOperand - rightOperand;
+        return leftOperand - this.executeStatement(statement.rightOperand);
       case "*":
         if (
           typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          typeof this.executeStatement(statement.rightOperand) !== "number"
         ) {
           throw new RuntimeError(
             "Operacje arytmetyczne można wykonywać tylko na liczbach.",
@@ -208,11 +206,11 @@ class Interpreter {
           );
         }
 
-        return leftOperand * rightOperand;
+        return leftOperand * this.executeStatement(statement.rightOperand);
       case "/":
         if (
           typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          typeof this.executeStatement(statement.rightOperand) !== "number"
         ) {
           throw new RuntimeError(
             "Operacje arytmetyczne można wykonywać tylko na liczbach.",
@@ -220,11 +218,11 @@ class Interpreter {
           );
         }
 
-        return leftOperand / rightOperand;
+        return leftOperand / this.executeStatement(statement.rightOperand);
       case "div":
         if (
           typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          typeof this.executeStatement(statement.rightOperand) !== "number"
         ) {
           throw new RuntimeError(
             "Operacje arytmetyczne można wykonywać tylko na liczbach.",
@@ -232,11 +230,13 @@ class Interpreter {
           );
         }
 
-        return Math.floor(leftOperand / rightOperand);
+        return Math.floor(
+          leftOperand / this.executeStatement(statement.rightOperand)
+        );
       case "mod":
         if (
           typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          typeof this.executeStatement(statement.rightOperand) !== "number"
         ) {
           throw new RuntimeError(
             "Operacje arytmetyczne można wykonywać tylko na liczbach.",
@@ -244,12 +244,13 @@ class Interpreter {
           );
         }
 
-        return leftOperand % rightOperand;
+        return leftOperand % this.executeStatement(statement.rightOperand);
       case ">":
         if (
-          typeof leftOperand !== typeof rightOperand ||
+          typeof leftOperand !==
+            typeof this.executeStatement(statement.rightOperand) ||
           typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
+          typeof this.executeStatement(statement.rightOperand) === "boolean"
         ) {
           throw new RuntimeError(
             "Porównywać można tylko albo liczby, albo napisy.",
@@ -257,12 +258,13 @@ class Interpreter {
           );
         }
 
-        return leftOperand > rightOperand;
+        return leftOperand > this.executeStatement(statement.rightOperand);
       case "<":
         if (
-          typeof leftOperand !== typeof rightOperand ||
+          typeof leftOperand !==
+            typeof this.executeStatement(statement.rightOperand) ||
           typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
+          typeof this.executeStatement(statement.rightOperand) === "boolean"
         ) {
           throw new RuntimeError(
             "Porównywać można tylko albo liczby, albo napisy.",
@@ -270,12 +272,13 @@ class Interpreter {
           );
         }
 
-        return leftOperand < rightOperand;
+        return leftOperand < this.executeStatement(statement.rightOperand);
       case ">=":
         if (
-          typeof leftOperand !== typeof rightOperand ||
+          typeof leftOperand !==
+            typeof this.executeStatement(statement.rightOperand) ||
           typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
+          typeof this.executeStatement(statement.rightOperand) === "boolean"
         ) {
           throw new RuntimeError(
             "Porównywać można tylko albo liczby, albo napisy.",
@@ -283,12 +286,13 @@ class Interpreter {
           );
         }
 
-        return leftOperand >= rightOperand;
+        return leftOperand >= this.executeStatement(statement.rightOperand);
       case "<=":
         if (
-          typeof leftOperand !== typeof rightOperand ||
+          typeof leftOperand !==
+            typeof this.executeStatement(statement.rightOperand) ||
           typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
+          typeof this.executeStatement(statement.rightOperand) === "boolean"
         ) {
           throw new RuntimeError(
             "Porównywać można tylko albo liczby, albo napisy.",
@@ -296,12 +300,13 @@ class Interpreter {
           );
         }
 
-        return leftOperand <= rightOperand;
+        return leftOperand <= this.executeStatement(statement.rightOperand);
       case "==":
         if (
-          typeof leftOperand !== typeof rightOperand ||
+          typeof leftOperand !==
+            typeof this.executeStatement(statement.rightOperand) ||
           typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
+          typeof this.executeStatement(statement.rightOperand) === "boolean"
         ) {
           throw new RuntimeError(
             "Porównywać można tylko albo liczby, albo napisy.",
@@ -309,12 +314,13 @@ class Interpreter {
           );
         }
 
-        return leftOperand === rightOperand;
+        return leftOperand === this.executeStatement(statement.rightOperand);
       case "!=":
         if (
-          typeof leftOperand !== typeof rightOperand ||
+          typeof leftOperand !==
+            typeof this.executeStatement(statement.rightOperand) ||
           typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
+          typeof this.executeStatement(statement.rightOperand) === "boolean"
         ) {
           throw new RuntimeError(
             "Porównywać można tylko albo liczby, albo napisy.",
@@ -322,11 +328,15 @@ class Interpreter {
           );
         }
 
-        return leftOperand !== rightOperand;
+        return leftOperand !== this.executeStatement(statement.rightOperand);
       case "oraz":
+        if (typeof leftOperand === "boolean" && !leftOperand) {
+          return false;
+        }
+
         if (
           typeof leftOperand !== "boolean" ||
-          typeof rightOperand !== "boolean"
+          typeof this.executeStatement(statement.rightOperand) !== "boolean"
         ) {
           throw new RuntimeError(
             "Spójników logicznych można używać jedynie na wartościach PRAWDA/FAŁSZ.",
@@ -334,11 +344,15 @@ class Interpreter {
           );
         }
 
-        return leftOperand && rightOperand;
+        return leftOperand && this.executeStatement(statement.rightOperand);
       case "lub":
+        if (typeof leftOperand === "boolean" && leftOperand) {
+          return true;
+        }
+
         if (
           typeof leftOperand !== "boolean" ||
-          typeof rightOperand !== "boolean"
+          typeof this.executeStatement(statement.rightOperand) !== "boolean"
         ) {
           throw new RuntimeError(
             "Spójników logicznych można używać jedynie na wartościach PRAWDA/FAŁSZ.",
@@ -346,7 +360,7 @@ class Interpreter {
           );
         }
 
-        return leftOperand || rightOperand;
+        return leftOperand || this.executeStatement(statement.rightOperand);
       default:
         throw new InternalError(
           `Nieznany operator: ${statement.operator.symbol}.`

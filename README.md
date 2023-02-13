@@ -1,70 +1,206 @@
-# Getting Started with Create React App
+# pseudocoder
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Interpretator pseudokodu używanego na maturze z informatyki.
 
-## Available Scripts
+## Interpretator
 
-In the project directory, you can run:
+Interpretator jest reprezentowany przez klasę `Interpreter`. Klasa ta posiada jedną publiczną metodę: `execute`. Przyjmuje ona następujące argumenty:
 
-### `npm start`
+- `code`: kod programu jako napis
+- `startingBindings`: początkowo określone zmienne, przekazane jako obiekt zawierający nazwy zmiennych jako klucze, a wartości zmiennych jako wartości; domyślnie pusty obiekt
+- `firstIndex`: indeks, od którego zaczyna się indeksowanie tablic i napisów; domyślnie 1
+- `ifLogOutput`: czy wyjście programu ma być logowane do konsoli, czy tylko zwracane z metody; domyślnie *false*
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Metoda ta zwraca wyjście programu (wyrażenia wypisane przez polecenie WYPISZ) jako tablicę literałów.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Interpretator może wyrzucić 3 typy błędów:
 
-### `npm test`
+- `SyntaxError`: błąd składni, wykryty na etapie parsowania, np. nieprawidłowa składnia bloku JEŻELI
+- `RuntimeError`: błąd zaistniały na etapie wykonania programu, np. nieistnienie zmiennej
+- `InternalError`: błąd wewnętrzny, wskazujący na niepoprawne działanie interpretatora
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Opis języka
 
-### `npm run build`
+### Komentarze
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Komentarz zaczyna się znakiem # i obejmuje tekst do końca linii.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+# komentarz
+i <- 1 # również komentarz
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Zmienne
 
-### `npm run eject`
+Nazwy zmiennych mogą zawierać jedynie wielkie lub małe litery alfabetu angielskiego, cyfry lub podkreślnik. Cyfry nie mogą występować na początku nazwy zmiennej.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Przypisanie do zmiennej dokonuje się za pomocą słowa kluczowego `<-`.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+i <- 1
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Literały
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Język obsługuje 3 typy proste danych: liczba, napis oraz boolean.
 
-## Learn More
+Napisy otoczone są cudzysłowami "", a booleany przyjmują wartości PRAWDA lub FAŁSZ (bez cudzysłowów).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```
+liczba <- 3.14
+napis <- "hello world"
+boolean <- PRAWDA
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Tablice
 
-### Code Splitting
+Oprócz typów prostych język obsługuje tablice. Tablice nie muszą być deklarowane, można od razu przypisywać do ich indeksów.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Domyślnie tablice indeksowane są od indeksu 1. Można to zmienić, przesyłając startowy indeks jako 3. argument do metody `execute` klasy `Interpreter`.
+```
+T[1] <- "pierwsza wartość"
+pierwsza_wartosc <- T[1]
+```
 
-### Analyzing the Bundle Size
+Napisy również mogą być indeksowane (jednak muszą być wcześniej zadeklarowane). W napisach można podmieniać pojedyncze znaki.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```
+napis <- "kot"
+napis[3] <- "ń"
+```
 
-### Making a Progressive Web App
+### Operatory arytmetyczne
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Dostępne są następujące operatory arytmetyczne:
 
-### Advanced Configuration
+- I grupa
+  - `+`
+  - `-`
+- II grupa
+  - `*`
+  - `/`
+  - `div`: dzielenie całkowite
+  - `mod`: modulo (reszta z dzielenia)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Operatory z II grupy są "silniejsze" niż operatory z I grupy, tzn. ich operacje są wykonywane najpierw. Oprócz tego obowiązuje kolejność od lewej do prawej.
 
-### Deployment
+Nawiasy okrągłe są symbolami pomocniczymi, które mogą zmienić kolejność wykonywania operacji.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```
+wyrazenie <- (2 + 2 * 2) div 10 mod 4
+```
 
-### `npm run build` fails to minify
+### Operatory porównania
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Dostępne są następujące operatory porównania:
+
+- `==`
+- `!=`
+- `>`
+- `>=`
+- `<`
+- `<=`
+
+Operatory te są "słabsze" niż operatory arytmetyczne.
+
+```
+porownanie <- 2 == 3
+```
+
+### Operatory logiczne
+
+Dostępne są następujące operatory logiczne:
+
+- `lub`
+- `oraz`
+- `nie`
+
+Operatory te są "słabsze" od operatorów porównania oraz arytmetycznych, natomiast ich kolejność została podana od "najsłabszego" do "najsilniejszego" (tzn. operator `nie` jest najsilniejszy).
+
+```
+prawda <- nie FAŁSZ
+```
+
+### Blok kodu
+
+Bloki kodu oznaczane są tym samym poziomem wcięcia. Wcięcie może być znakiem tabulacji lub 4 spacjami.
+
+```
+jeżeli n > 2 to
+    # to jest blok kodu
+    wypisz n
+```
+
+### Instrukcja WYPISZ
+
+Instrukcja WYPISZ rozpoczyna się od słowa kluczowego `wypisz`, po czym następuje wyrażenie. Wyrażenie to zostanie dodane do wyjścia programu oraz ewentualnie (jeśli włączona jest opcja `ifLogOutput`) zalogowana do konsoli.
+
+```
+wypisz "Hello world"
+```
+
+### Instrukcja warunkowa
+
+Instrukcja warunkowa rozpoczyna się słowem kluczowym `jeżeli`, po czym następuje wyrażenie, które musi ewaluować do wartości booleanowskiej, następnie słowo kluczowe `to` oraz blok kodu.
+
+Po bloku kodu może, ale nie musi, wystąpić słowo kluczowe `w przeciwnym razie`, a po nim blok kodu, który zostanie wykonany, jeśli warunek instrukcji warunkowej nie został spełniony.
+
+```
+jeżeli n > 10 to
+    wypisz "n jest większe od 10"
+w przeciwnym razie
+    wypisz "n jest mniejsze lub równe 10"
+```
+
+### Pętla dopóki
+
+Pętla *dopóki* rozpoczyna się słowem kluczowym `dopóki`, po czym następuje wyrażenie, które musi ewaluować do wartości booleanowskiej, następnie słowo kluczowe `wykonuj` oraz blok kodu.
+
+```
+dopóki n > 10 wykonuj
+    wypisz n
+    n <- n - 1
+```
+
+### Pętla dla
+
+Pętla *dla* rozpoczyna się słowem kluczowym `dla`, po którym następuje deklaracja zmiennej sterującej, słowo kluczowe `=`, wyrażenie reprezentujące początkową wartość zmiennej sterującej, przecinek, wyrażenie reprezentujące drugą wartość zmiennej sterującej, przecinek, trzy kropki, wyrażenie reprezentujące końcową wartość zmiennej sterującej, słowo kluczowe `wykonuj` oraz blok kodu.
+
+Pętla przypisuje zmiennej sterującej kolejne wartości, dodając do wartości początkowej krok (różnicę między drugą wartością a wartością początkową), aż do osiągnięcia wartości końcowej.
+
+```
+# pętla z krokiem 1
+dla i = 1, 2, ..., 10 wykonuj
+    wypisz i
+
+# pętla z krokiem 10
+dla j = 10, 20, ..., 100 wykonuj
+    wypisz j
+```
+
+### Funkcje
+
+Funkcja rozpoczyna się słowem kluczowym `funkcja`, po którym następuje nazwa funkcji (która musi być legalną nazwą zmiennej), następnie nawiasy, a w nich lista parametrów oddzielonych przecinkami (lub puste nawiasy, jeśli funkcja nie przyjmuje parametrów), a następnie blok kodu.
+
+Funkcje tworzą zasięg zmiennych: wszystkie zmienne zadeklarowane w ciele funkcji (w tym nowe tablice) nie będą dostępne poza funkcją.
+
+Funkcja może zwracać wartości. Dokonuje się tego za pomocą słowa kluczowego `zwróć`, po którym następuje wyrażenie, które funkcja zwróci.
+
+```
+funkcja dodaj(a, b)
+    zwróć a + b
+
+suma <- dodaj(1, 2)
+```
+
+### Wbudowane funkcje
+
+Następujące funkcje są wbudowane w język:
+
+- `sufit(liczba)`: zaokrągla liczbę w górę do najbliższej liczby całkowitej
+- `podloga(liczba)`: zaokrągla liczbę w dół do najbliższej liczby całkowitej
+
+```
+wypisz sufit(3.14)
+wypisz podloga(3.14)
+```
