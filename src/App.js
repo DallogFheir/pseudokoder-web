@@ -108,9 +108,6 @@ wypisz T`
           column: err.column,
           message: err.message,
         });
-      } else if (err.message === "too much recursion") {
-        setOutput("");
-        setError("Za dużo rekurencji!");
       } else {
         setOutput("");
         setError("Ups, wystąpił nieoczekiwany błąd wewnętrzny.");

@@ -34,6 +34,7 @@ class Interpreter {
     this.callStack = [{ ...startingBindings, ...builtinBindings }];
     this.firstIndex = firstIndex;
     this.ifLogOutput = ifLogOutput;
+    this.returnValue = null;
     this.output = [];
 
     const parser = new Parser();
@@ -50,10 +51,14 @@ class Interpreter {
     switch (statement.type) {
       case "BlockStatement":
         for (const substatement of statement.statements) {
-          const ifReturned = this.executeStatement(substatement);
+          this.executeStatement(substatement);
 
-          if (typeof ifReturned === "object" && ifReturned.type === "RETURN") {
-            return ifReturned.value;
+          if (
+            this.returnValue !== null &&
+            typeof this.returnValue === "object" &&
+            this.returnValue.type === "RETURN"
+          ) {
+            return this.returnValue.value;
           }
         }
         break;
@@ -86,10 +91,11 @@ class Interpreter {
         return this.executeCall(statement);
       case "Return":
         const returnValue = this.executeReturn(statement);
-        return {
+        this.returnValue = {
           type: "RETURN",
           value: returnValue,
         };
+        break;
       case "PrintStatement":
         this.executePrint(statement);
         break;
@@ -581,8 +587,14 @@ class Interpreter {
       }, {});
 
       this.callStack.push(localBindings);
+
+      if (this.callStack.length > 999) {
+        throw new RuntimeError("Przepełnienie stosu!", statement.position);
+      }
+
       const returnValue = this.executeStatement(value.body);
       this.callStack.pop();
+      this.returnValue = null;
       return returnValue;
     } else {
       throw new InternalError(`Nieoczekiwany typ funkcji: ${statement.type}.`);
