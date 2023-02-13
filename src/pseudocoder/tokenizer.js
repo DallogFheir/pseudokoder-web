@@ -137,7 +137,7 @@ class Tokenizer {
 
     // KEYWORD
     const matchedKeyword =
-      /^(<-|=|zwróć |(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b)/.exec(
+      /^(<-|=|zwróć |zwróć$|(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b)/.exec(
         this.currentSlice
       );
     if (matchedKeyword !== null) {

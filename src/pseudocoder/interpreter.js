@@ -590,7 +590,7 @@ class Interpreter {
   }
 
   executeReturn(statement) {
-    return this.executeStatement(statement.value);
+    return statement.value && this.executeStatement(statement.value);
   }
 
   executePrint(statement) {

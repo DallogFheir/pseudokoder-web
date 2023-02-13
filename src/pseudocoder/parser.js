@@ -412,7 +412,7 @@ class Parser {
     if (tokens.length > 1) {
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
-        if (token.type === "Identifier" && i % 2 == 1) {
+        if (token.type === "Identifier" && i % 2 === 1) {
           throw new SyntaxError(
             `Nieoczekiwana zmienna: ${token.symbol}.`,
             token.position
@@ -682,7 +682,10 @@ class Parser {
       );
     }
 
-    const expression = this.expressionProduction();
+    const expression =
+      this.lookahead.type === "INDENTATION"
+        ? null
+        : this.expressionProduction();
     return {
       type: "Return",
       value: expression,

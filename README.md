@@ -184,7 +184,7 @@ Funkcja rozpoczyna się słowem kluczowym `funkcja`, po którym następuje nazwa
 
 Funkcje tworzą zasięg zmiennych: wszystkie zmienne zadeklarowane w ciele funkcji (w tym nowe tablice) nie będą dostępne poza funkcją.
 
-Funkcja może zwracać wartości. Dokonuje się tego za pomocą słowa kluczowego `zwróć`, po którym następuje wyrażenie, które funkcja zwróci.
+Funkcja może zwracać wartości. Dokonuje się tego za pomocą słowa kluczowego `zwróć`, po którym następuje wyrażenie, które funkcja zwróci (lub nic, jeżeli funkcja ma nic nie zwracać, a słowo `zwróć` służy tylko do wcześniejszego wyjścia z funkcji).
 
 ```
 funkcja dodaj(a, b)
