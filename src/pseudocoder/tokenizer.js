@@ -137,7 +137,7 @@ class Tokenizer {
 
     // KEYWORD
     const matchedKeyword =
-      /^(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b/.exec(
+      /^(<-|(dla|dopóki|jeżeli|to|w przeciwnym razie|wykonuj|wypisz|funkcja)\b)/.exec(
         this.currentSlice
       );
     if (matchedKeyword !== null) {
@@ -223,7 +223,7 @@ class Tokenizer {
 
     // OPERATOR
     const matchedOperator =
-      /^(==|=|<-|\+|-|\*|\/|div|mod|<=|>=|<|>|!=|oraz\b|lub\b|nie\b)/.exec(
+      /^(==|=|\+|-|\*|\/|div|mod|<=|>=|<|>|!=|oraz\b|lub\b|nie\b)/.exec(
         this.currentSlice
       );
     if (matchedOperator !== null) {

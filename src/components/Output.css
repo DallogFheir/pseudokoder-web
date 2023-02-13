@@ -5,12 +5,15 @@
 }
 
 .output {
+  background-color: #454545;
   margin: 10px;
-  max-height: 200px;
+  padding: 10px;
+  height: 100px;
+  max-height: 100px;
   font-family: "Courier New", Courier, monospace;
   line-height: 15px;
   white-space: pre-wrap;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .output-error {

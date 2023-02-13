@@ -16,7 +16,7 @@ function Output({ output, error }) {
     <div className="container-output">
       <h2 className="fw-bold">Wyjście</h2>
       <div className="output">
-        <p>{output}</p>
+        {output !== "" && <p>{output}</p>}
         {error !== null &&
           fullMessage.split("\n").map((part, idx) => (
             <p className="output-error" key={`error-${idx}`}>

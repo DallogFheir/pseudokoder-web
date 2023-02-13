@@ -5,6 +5,19 @@ class Parser {
   constructor() {
     this.ifNextLine = false;
     this.indentationLevel = 0;
+    this.tokenTrans = {
+      INDENTATION: "wcięcie",
+      IDENTIFIER: "zmienna",
+      PARENTHESIS: "nawias okrągły",
+      BRACKET: "nawias kwadratowy",
+      COMMA: "przecinek",
+      KEYWORD: "słowo kluczowe",
+      NUMBER: "liczba",
+      STRING: "napis",
+      BOOL: "boolean",
+      OPERATOR: "operator",
+      ELLIPSIS: "trzy kropki",
+    };
   }
 
   parse(code) {
@@ -29,9 +42,9 @@ class Parser {
 
     if (this.lookahead.type !== type) {
       throw new SyntaxError(
-        `Nieoczekiwany token: ${this.lookahead.type}, oczekiwano: ${
-          expected ?? type
-        }.`,
+        `Nieoczekiwany token: ${
+          this.tokenTrans[this.lookahead.type]
+        }, oczekiwano: ${expected ?? type}.`,
         this.lookahead.position
       );
     }
@@ -93,7 +106,6 @@ class Parser {
   blockStatementProduction() {
     this.indentationLevel++;
 
-    debugger;
     const statements = [];
     let continueLoop = true;
     while (
@@ -175,13 +187,10 @@ class Parser {
 
     if (this.lookahead === null) {
       this.tokenizer.col--;
-      throw new SyntaxError(
-        "Nieoczekiwany koniec wejścia, oczekiwano: OPERATOR.",
-        {
-          line: this.tokenizer.line + 1,
-          column: this.tokenizer.col,
-        }
-      );
+      throw new SyntaxError("Nieoczekiwany koniec wejścia, oczekiwano: <-.", {
+        line: this.tokenizer.line + 1,
+        column: this.tokenizer.col,
+      });
     }
 
     if (this.lookahead.type === "BRACKET") {
@@ -189,12 +198,12 @@ class Parser {
       bracket = this.bracketProduction();
     }
 
-    const operator = this.consume("OPERATOR");
+    const arrowKeyword = this.consume("KEYWORD", "<-");
 
-    if (operator.value !== "<-") {
+    if (arrowKeyword.value !== "<-") {
       throw new SyntaxError(
         "Po zmiennej musi wystąpić operator przypisania <-.",
-        operator.position
+        arrowKeyword.position
       );
     }
 
@@ -259,7 +268,7 @@ class Parser {
           break;
         default:
           throw new SyntaxError(
-            `Nieoczekiwany token: ${this.lookahead.type}.`,
+            `Nieoczekiwany token: ${this.tokenTrans[this.lookahead.type]}.`,
             this.lookahead.position
           );
       }
@@ -420,7 +429,7 @@ class Parser {
 
     return {
       type: "BoolLiteral",
-      value: token.value,
+      value: token.value === "PRAWDA",
       position: token.position,
     };
   }
@@ -509,7 +518,7 @@ class Parser {
     this.consume("ELLIPSIS");
     this.consume("COMMA");
     const end = this.expressionProduction();
-    this.consume("KEYWORD");
+    this.consume("KEYWORD", "wykonuj");
 
     const body = this.blockStatementProduction();
 
@@ -544,7 +553,15 @@ class Parser {
   ifProduction() {
     const _if = this.consume("KEYWORD");
     const expression = this.expressionProduction();
-    this.consume("KEYWORD", "to");
+    const thenKeyword = this.consume("KEYWORD", "to");
+
+    if (thenKeyword.value !== "to") {
+      throw new SyntaxError(
+        `Nieoczekiwane słowo kluczowe: ${thenKeyword.value}, oczekiwano: to.`,
+        thenKeyword.position
+      );
+    }
+
     const body = this.blockStatementProduction();
 
     let elseBlock;

@@ -15,7 +15,8 @@ function App() {
   const [error, setError] = useState(null);
   const [code, setCode] = useLocalStorage(
     "code",
-    `dla i = 1, 2, ..., n - 2 wykonuj
+    `# sortowanie bąbelkowe
+dla i = 1, 2, ..., n - 2 wykonuj
      dla j = 1, 2, ..., n - i wykonuj
         jeżeli T[j] > T[j + 1] to
             temp <- T[j]
