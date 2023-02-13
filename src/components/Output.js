@@ -3,13 +3,17 @@ import "./Output.css";
 function Output({ output, error }) {
   let fullMessage;
   if (error !== null) {
-    const line = error.lines[error.line - 1];
-    const pointer = " ".repeat(error.column) + "^";
+    if (typeof error === "object") {
+      const line = error.lines[error.line - 1];
+      const pointer = " ".repeat(error.column) + "^";
 
-    fullMessage =
-      line === undefined
-        ? error.message
-        : `${line}\n${pointer}\n${error.message}`;
+      fullMessage =
+        line === undefined
+          ? error.message
+          : `${line}\n${pointer}\n${error.message}`;
+    } else {
+      fullMessage = error;
+    }
   }
 
   return (

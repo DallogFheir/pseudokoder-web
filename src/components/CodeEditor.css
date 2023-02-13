@@ -9,9 +9,9 @@
 .editor-numbers {
   color: white;
   background-color: #333;
+  padding: 10px;
   font-weight: bold;
   font-size: 1.5rem;
-  margin-right: 10px;
   overflow-y: hidden;
   line-height: 25px;
   border: none;
@@ -20,8 +20,11 @@
 }
 
 .editor-textarea {
+  position: relative;
+  left: -30px;
   color: white;
   background-color: #454545;
+  padding: 10px;
   overflow-y: hidden;
   line-height: 25px;
   font-size: 1.5rem;

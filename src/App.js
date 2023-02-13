@@ -4,6 +4,7 @@ import CodeEditor from "./components/CodeEditor";
 import Variables from "./components/Variables";
 import Output from "./components/Output";
 import Interpreter from "./pseudocoder/interpreter";
+import { SyntaxError, RuntimeError } from "./pseudocoder/errors";
 import "./App.css";
 
 function App() {
@@ -84,26 +85,38 @@ wypisz T`
       );
       setError(null);
     } catch (err) {
-      const lines = code.split("\n").map((line) => line.replace("\t", "    "));
-      const output =
-        err.output &&
-        err.output
-          .map((el) => {
-            if (Array.isArray(el)) {
-              return `[${el.join(", ")}]`;
-            }
+      console.error(err);
 
-            return el;
-          })
-          .join("\n");
+      if (err instanceof SyntaxError || err instanceof RuntimeError) {
+        const lines = code
+          .split("\n")
+          .map((line) => line.replace("\t", "    "));
+        const output =
+          err.output &&
+          err.output
+            .map((el) => {
+              if (Array.isArray(el)) {
+                return `[${el.join(", ")}]`;
+              }
 
-      setOutput(output || "");
-      setError({
-        lines,
-        line: err.line,
-        column: err.column,
-        message: err.message,
-      });
+              return el;
+            })
+            .join("\n");
+
+        setOutput(output || "");
+        setError({
+          lines,
+          line: err.line,
+          column: err.column,
+          message: err.message,
+        });
+      } else if (err.message === "too much recursion") {
+        setOutput("");
+        setError("Za dużo rekurencji!");
+      } else {
+        setOutput("");
+        setError("Ups, wystąpił nieoczekiwany błąd wewnętrzny.");
+      }
     }
   };
 

@@ -3,14 +3,42 @@ import { RuntimeError, InternalError } from "./errors.js";
 
 class Interpreter {
   execute(code, startingBindings = {}, firstIndex = 1, ifLogOutput = true) {
-    this.bindings = { ...startingBindings };
-    this.callStack = [];
+    const builtins = [
+      {
+        identifier: "sufit",
+        parameters: ["liczba"],
+        function: Math.ceil,
+      },
+      {
+        identifier: "podloga",
+        parameters: ["liczba"],
+        function: Math.floor,
+      },
+    ];
+
+    const builtinBindings = builtins.reduce((acc, curr) => {
+      acc[curr.identifier] = {
+        type: "builtin",
+        parameters: {
+          type: "ParametersList",
+          parameters: curr.parameters.map((parameter) => ({
+            type: "Identifier",
+            symbol: parameter,
+          })),
+        },
+        function: curr.function,
+      };
+
+      return acc;
+    }, {});
+    this.callStack = [{ ...startingBindings, ...builtinBindings }];
     this.firstIndex = firstIndex;
     this.ifLogOutput = ifLogOutput;
     this.output = [];
 
     const parser = new Parser();
     const ast = parser.parse(code);
+    console.log(ast);
 
     for (const statement of ast.body.statements) {
       this.executeStatement(statement);
@@ -23,7 +51,11 @@ class Interpreter {
     switch (statement.type) {
       case "BlockStatement":
         for (const substatement of statement.statements) {
-          this.executeStatement(substatement);
+          const ifReturned = this.executeStatement(substatement);
+
+          if (typeof ifReturned === "object" && ifReturned.type === "RETURN") {
+            return ifReturned.value;
+          }
         }
         break;
       case "Identifier":
@@ -52,8 +84,13 @@ class Interpreter {
         this.executeFunction(statement);
         break;
       case "Call":
-        this.executeCall(statement);
-        break;
+        return this.executeCall(statement);
+      case "Return":
+        const returnValue = this.executeReturn(statement);
+        return {
+          type: "RETURN",
+          value: returnValue,
+        };
       case "PrintStatement":
         this.executePrint(statement);
         break;
@@ -63,12 +100,16 @@ class Interpreter {
   }
 
   executeIdentifier(statement) {
-    const bindings =
-      this.callStack.length > 0
-        ? this.callStack.at(-1).bindings
-        : this.bindings;
+    let value = null;
+    for (let i = this.callStack.length - 1; i >= 0; i--) {
+      const bindings = this.callStack[i];
+      if (statement.symbol in bindings) {
+        value = bindings[statement.symbol];
+        break;
+      }
+    }
 
-    if (!(statement.symbol in bindings)) {
+    if (value === null) {
       throw new RuntimeError(
         `Nieznana zmienna: ${statement.symbol}.`,
         statement.position,
@@ -76,7 +117,7 @@ class Interpreter {
       );
     }
 
-    return bindings[statement.symbol];
+    return value;
   }
 
   executeLiteral(statement) {
@@ -314,21 +355,33 @@ class Interpreter {
   }
 
   executeAssignment(statement) {
-    const bindings =
-      this.callStack.length > 0
-        ? this.callStack.at(-1).bindings
-        : this.bindings;
+    const rightOperand = this.executeStatement(statement.rightOperand);
+    if (rightOperand === undefined) {
+      throw new RuntimeError(
+        `Funkcja ${statement.rightOperand.identifier.symbol} nic nie zwraca.`,
+        statement.rightOperand.position
+      );
+    }
 
     if (statement.identifier.type === "ArrayIdentifier") {
-      if (!(statement.identifier.symbol in bindings)) {
-        bindings[statement.identifier.symbol] = [];
+      let value = null;
+      let localBindings;
+      for (let i = this.callStack.length - 1; i >= 0; i--) {
+        const bindings = this.callStack[i];
+        if (statement.identifier.symbol in bindings) {
+          value = bindings[statement.identifier.symbol];
+          localBindings = bindings;
+          break;
+        }
       }
 
-      const identifierValue = bindings[statement.identifier.symbol];
-      if (
-        typeof identifierValue !== "string" &&
-        !Array.isArray(identifierValue)
-      ) {
+      if (value === null) {
+        value = [];
+        this.callStack.at(-1)[statement.identifier.symbol] = value;
+        localBindings = this.callStack.at(-1);
+      }
+
+      if (typeof value !== "string" && !Array.isArray(value)) {
         throw new RuntimeError(
           `Zmienna ${statement.identifier.symbol} nie jest tablicą ani napisem.`,
           statement.identifier.position,
@@ -348,11 +401,10 @@ class Interpreter {
         );
       }
 
-      const rightOperand = this.executeStatement(statement.rightOperand);
-      if (Array.isArray(identifierValue)) {
-        bindings[statement.identifier.symbol][index] = rightOperand;
+      if (Array.isArray(value)) {
+        value[index] = rightOperand;
       } else {
-        if (index > identifierValue.length) {
+        if (index > value.length) {
           throw new RuntimeError(
             `Indeks ${index + this.firstIndex} poza długością napisu ${
               statement.identifier.symbol
@@ -370,15 +422,11 @@ class Interpreter {
           );
         }
 
-        bindings[statement.identifier.symbol] =
-          identifierValue.substring(0, index) +
-          rightOperand +
-          identifierValue.substring(index + 1);
+        localBindings[statement.identifier.symbol] =
+          value.substring(0, index) + rightOperand + value.substring(index + 1);
       }
     } else if (statement.identifier.type === "Identifier") {
-      bindings[statement.identifier.symbol] = this.executeStatement(
-        statement.rightOperand
-      );
+      this.callStack.at(-1)[statement.identifier.symbol] = rightOperand;
     } else {
       throw new InternalError(
         `Nieznany typ identyfikatora: ${statement.identifier.type}.`
@@ -402,11 +450,6 @@ class Interpreter {
   }
 
   executeForLoop(statement) {
-    const bindings =
-      this.callStack.length > 0
-        ? this.callStack.at(-1).bindings
-        : this.bindings;
-
     const start = this.executeStatement(statement.start);
     const second = this.executeStatement(statement.second);
     const end = this.executeStatement(statement.end);
@@ -423,7 +466,7 @@ class Interpreter {
       }
 
       for (let i = start; i <= end; i += step) {
-        bindings[statement.identifier.symbol] = i;
+        this.callStack.at(-1)[statement.identifier.symbol] = i;
 
         this.executeStatement(statement.body);
       }
@@ -437,7 +480,7 @@ class Interpreter {
       }
 
       for (let i = start; i >= end; i += step) {
-        bindings[statement.identifier.symbol] = i;
+        this.callStack.at(-1)[statement.identifier.symbol] = i;
 
         this.executeStatement(statement.body);
       }
@@ -463,14 +506,24 @@ class Interpreter {
   }
 
   executeFunction(statement) {
-    this.bindings[statement.identifier.symbol] = {
+    this.callStack.at(-1)[statement.identifier.symbol] = {
+      type: "user-defined",
       parameters: statement.parameters,
       body: statement.body,
     };
   }
 
   executeCall(statement) {
-    if (!(statement.identifier.symbol in this.bindings)) {
+    let value = null;
+    for (let i = this.callStack.length - 1; i >= 0; i--) {
+      const bindings = this.callStack[i];
+      if (statement.identifier.symbol in bindings) {
+        value = bindings[statement.identifier.symbol];
+        break;
+      }
+    }
+
+    if (value === null) {
       throw new RuntimeError(
         `Nieznana zmienna: ${statement.identifier.symbol}.`,
         statement.identifier.position,
@@ -478,9 +531,7 @@ class Interpreter {
       );
     }
 
-    const binding = this.bindings[statement.identifier.symbol];
-
-    if (typeof binding !== "object") {
+    if (typeof value !== "object") {
       throw new RuntimeError(
         `Zmienna ${statement.identifier.symbol} nie jest funkcją.`,
         statement.position,
@@ -488,29 +539,56 @@ class Interpreter {
       );
     }
 
-    if (binding.parameters.parameters.length !== statement.arguments.length) {
+    if (value.parameters.parameters.length !== statement.arguments.length) {
       throw new RuntimeError(
-        `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${binding.parameters.parameters.length}, otrzymała liczbę argumentów: ${statement.arguments.length}.`,
+        `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${value.parameters.parameters.length}, otrzymała liczbę argumentów: ${statement.arguments.length}.`,
         statement.position,
         this.output
       );
     }
 
-    const localBindings = {
-      bindings: statement.arguments.reduce((acc, curr, idx) => {
-        acc[binding.parameters.parameters[idx].symbol] =
+    if (value.type === "builtin") {
+      const args = statement.arguments.map((argumentObj) =>
+        this.executeStatement(argumentObj)
+      );
+
+      if (args.length !== value.function.length) {
+        throw new RuntimeError(
+          `Funkcja ${statement.identifier.symbol} przyjmuje liczbę argumentów: ${value.function.length}, otrzymała liczbę argumentów: ${args.length}.`
+        );
+      }
+
+      return value.function(...args);
+    } else if (value.type === "user-defined") {
+      const localBindings = statement.arguments.reduce((acc, curr, idx) => {
+        acc[value.parameters.parameters[idx].symbol] =
           this.executeStatement(curr);
         return acc;
-      }, {}),
-    };
+      }, {});
 
-    this.callStack.push(localBindings);
-    this.executeStatement(binding.body);
-    this.callStack.pop();
+      this.callStack.push(localBindings);
+      const returnValue = this.executeStatement(value.body);
+      this.callStack.pop();
+      return returnValue;
+    } else {
+      throw new InternalError(`Nieoczekiwany typ funkcji: ${statement.type}.`);
+    }
+  }
+
+  executeReturn(statement) {
+    return this.executeStatement(statement.value);
   }
 
   executePrint(statement) {
     const executedStatement = this.executeStatement(statement.value);
+
+    if (executedStatement === undefined) {
+      throw new RuntimeError(
+        `Funkcja ${statement.value.identifier.symbol} nic nie zwraca.`,
+        statement.value.position
+      );
+    }
+
     const output =
       typeof executedStatement === "boolean"
         ? executedStatement

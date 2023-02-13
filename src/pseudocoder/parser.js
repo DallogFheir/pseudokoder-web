@@ -5,6 +5,7 @@ class Parser {
   constructor() {
     this.ifNextLine = false;
     this.indentationLevel = 0;
+    this.definingFunction = false;
     this.tokenTrans = {
       INDENTATION: "wcięcie",
       IDENTIFIER: "zmienna",
@@ -32,7 +33,9 @@ class Parser {
   consume(type, expected = null) {
     if (this.lookahead === null) {
       throw new SyntaxError(
-        `Nieoczekiwany koniec wejścia, oczekiwano ${expected ?? type}.`,
+        `Nieoczekiwany koniec wejścia, oczekiwano: ${
+          expected ?? this.tokenTrans[type]
+        }.`,
         {
           line: this.tokenizer.line,
           column: this.tokenizer.col,
@@ -44,7 +47,7 @@ class Parser {
       throw new SyntaxError(
         `Nieoczekiwany token: ${
           this.tokenTrans[this.lookahead.type]
-        }, oczekiwano: ${expected ?? type}.`,
+        }, oczekiwano: ${expected ?? this.tokenTrans[type]}.`,
         this.lookahead.position
       );
     }
@@ -141,7 +144,7 @@ class Parser {
   assignmentOrCallProduction() {
     const identifier = this.consume("IDENTIFIER");
 
-    if (this.lookahead.type === "PARENTHESIS") {
+    if (this.lookahead !== null && this.lookahead.type === "PARENTHESIS") {
       return this.callProduction(identifier);
     }
 
@@ -173,7 +176,7 @@ class Parser {
       type: "Call",
       identifier: {
         type: "Identifier",
-        symbol: identifier.value,
+        symbol: identifier.value || identifier.symbol,
         position: identifier.position,
       },
       arguments: argumentList,
@@ -188,7 +191,7 @@ class Parser {
     if (this.lookahead === null) {
       this.tokenizer.col--;
       throw new SyntaxError("Nieoczekiwany koniec wejścia, oczekiwano: <-.", {
-        line: this.tokenizer.line + 1,
+        line: this.tokenizer.line,
         column: this.tokenizer.col,
       });
     }
@@ -233,6 +236,18 @@ class Parser {
 
   expressionProduction() {
     const tokens = [];
+
+    if (this.lookahead === null) {
+      this.tokenizer.col--;
+      throw new SyntaxError(
+        "Nieoczekiwany koniec wejścia, oczekiwano: wyrażenie.",
+        {
+          line: this.tokenizer.line,
+          column: this.tokenizer.col,
+        }
+      );
+    }
+
     do {
       switch (this.lookahead.type) {
         case "NUMBER":
@@ -254,7 +269,12 @@ class Parser {
             );
           }
 
-          tokens.push(this.parenthesisProduction());
+          if (tokens.at(-1).type === "Identifier") {
+            tokens.push(this.callProduction(tokens.pop()));
+          } else {
+            tokens.push(this.parenthesisProduction());
+          }
+
           break;
         case "BRACKET":
           if (this.lookahead.value === "]") {
@@ -490,6 +510,8 @@ class Parser {
         break;
       case "funkcja":
         return this.functionProduction();
+      case "zwróć":
+        return this.returnProduction();
       case "wypisz":
         return this.printProduction();
       default:
@@ -614,12 +636,31 @@ class Parser {
     };
   }
 
+  returnProduction() {
+    const returnKeyword = this.consume("KEYWORD");
+
+    if (!this.definingFunction) {
+      throw new SyntaxError(
+        "Słowo kluczowe ZWRÓĆ poza funkcją.",
+        returnKeyword.position
+      );
+    }
+
+    const expression = this.expressionProduction();
+    return {
+      type: "Return",
+      value: expression,
+    };
+  }
+
   functionProduction() {
     const functionKeyword = this.consume("KEYWORD");
     const functionName = this.consume("IDENTIFIER");
     const parameters = this.parameterListProduction();
+    this.definingFunction = true;
     const body = this.blockStatementProduction();
 
+    this.definingFunction = false;
     return {
       type: "Function",
       identifier: {
