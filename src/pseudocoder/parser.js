@@ -150,14 +150,20 @@ class Parser {
       if (continueLoop && this.lookahead.type !== "INDENTATION") {
         statements.push(this.statementProduction());
 
-        if (this.lookahead !== null) {
+        if (
+          this.lookahead !== null &&
+          this.lookahead.value !== "w przeciwnym razie"
+        ) {
           setBackBeforeNewline = this.lookahead.position;
           this.consume("NEWLINE");
         }
       }
     }
 
-    if (this.lookahead !== null) {
+    if (
+      this.lookahead !== null &&
+      this.lookahead.value !== "w przeciwnym razie"
+    ) {
       this.tokenizer.setBack(
         setBackBeforeNewline.line,
         setBackBeforeNewline.column,

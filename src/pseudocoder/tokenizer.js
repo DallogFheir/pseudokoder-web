@@ -57,7 +57,7 @@ class Tokenizer {
     const line = this.line;
     const col = this.col;
 
-    // empty line
+    // new line
     if (this.ifNextLine) {
       this.ifNextLine = false;
       this.ifPreviousNextLine = true;
@@ -69,6 +69,13 @@ class Tokenizer {
           column: col,
         },
       };
+    }
+
+    // empty line
+    if (this.lines[this.line] === "") {
+      this.col++;
+
+      return this.getNextToken();
     }
 
     // indentation

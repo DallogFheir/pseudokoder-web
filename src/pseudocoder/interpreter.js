@@ -39,7 +39,6 @@ class Interpreter {
 
     const parser = new Parser();
     const ast = parser.parse(code);
-    console.log(ast);
 
     for (const statement of ast.body.statements) {
       this.executeStatement(statement);
@@ -54,11 +53,7 @@ class Interpreter {
         for (const substatement of statement.statements) {
           this.executeStatement(substatement);
 
-          if (
-            this.returnValue !== null &&
-            typeof this.returnValue === "object" &&
-            this.returnValue.type === "RETURN"
-          ) {
+          if (this.returnValue !== null) {
             return this.returnValue.value;
           }
         }
@@ -467,6 +462,10 @@ class Interpreter {
       }
 
       this.executeStatement(statement.body);
+
+      if (this.returnValue !== null) {
+        return;
+      }
     }
   }
 
@@ -490,6 +489,10 @@ class Interpreter {
         this.callStack.at(-1)[statement.identifier.symbol] = i;
 
         this.executeStatement(statement.body);
+
+        if (this.returnValue !== null) {
+          return;
+        }
       }
     } else if (step < 0) {
       if (end > start) {
@@ -504,6 +507,10 @@ class Interpreter {
         this.callStack.at(-1)[statement.identifier.symbol] = i;
 
         this.executeStatement(statement.body);
+
+        if (this.returnValue !== null) {
+          return;
+        }
       }
     }
   }
