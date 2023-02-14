@@ -5,7 +5,8 @@ class Tokenizer {
     this.lines = code.split("\n").map((line) => line.replace("\t", "    "));
     this.line = 0;
     this._col = 0;
-    this.ifNextLine = true;
+    this.ifNextLine = false;
+    this.ifPreviousNextLine = true;
     this.ifPreviousIndentation = false;
   }
 
@@ -32,13 +33,20 @@ class Tokenizer {
     return this.lines[this.line].slice(this.col);
   }
 
-  setBack(line, col) {
+  setBack(line, col, newLine = false) {
     this.line = line;
     this.col = col;
+
+    if (newLine) {
+      this.ifNextLine = true;
+    }
   }
 
   hasMoreTokens() {
-    return this.line !== this.lines.length;
+    return (
+      this.line !== this.lines.length &&
+      !(this.lines.length === 1 && this.lines[0] === "")
+    );
   }
 
   getNextToken() {
@@ -50,19 +58,27 @@ class Tokenizer {
     const col = this.col;
 
     // empty line
-    if (this.lines[this.line].trim() === "") {
-      this.col += 1;
+    if (this.ifNextLine) {
+      this.ifNextLine = false;
+      this.ifPreviousNextLine = true;
 
-      return this.getNextToken();
+      return {
+        type: "NEWLINE",
+        position: {
+          line: line,
+          column: col,
+        },
+      };
     }
 
     // indentation
-    const matchedIndentation = /^(\t|    )/.exec(this.currentSlice);
+    const matchedIndentation = /^    /.exec(this.currentSlice);
     if (
       matchedIndentation !== null &&
-      (this.ifNextLine || this.ifPreviousIndentation)
+      (this.ifPreviousNextLine || this.ifPreviousIndentation)
     ) {
       this.col += matchedIndentation[0].length;
+      this.ifPreviousNextLine = false;
       this.ifPreviousIndentation = true;
 
       return {
@@ -74,6 +90,7 @@ class Tokenizer {
       };
     }
 
+    this.ifPreviousNextLine = false;
     this.ifPreviousIndentation = false;
     // whitespace or comment
     const matchedWhitespace = /^\s+|^#.*$/.exec(this.currentSlice);

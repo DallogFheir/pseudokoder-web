@@ -19,6 +19,7 @@ class Parser {
       BOOL: "boolean",
       OPERATOR: "operator",
       ELLIPSIS: "trzy kropki",
+      NEWLINE: "nowa linia",
     };
   }
 
@@ -78,15 +79,20 @@ class Parser {
       };
     }
 
+    this.consume("NEWLINE");
     statements.push(firstStatement);
 
     while (this.tokenizer.hasMoreTokens()) {
       statements.push(this.statementProduction());
+
+      if (this.tokenizer.hasMoreTokens()) {
+        this.consume("NEWLINE");
+      }
     }
 
     return {
       type: "StatementList",
-      statements,
+      statements: statements.filter((statement) => statement !== undefined),
     };
   }
 
@@ -105,6 +111,8 @@ class Parser {
         return this.assignmentOrCallProduction();
       case "KEYWORD":
         return this.keywordProduction();
+      case "NEWLINE":
+        break;
       default:
         throw new InternalError(
           `Nieoczekiwane polecenie: ${this.lookahead.type}.`
@@ -114,6 +122,8 @@ class Parser {
 
   blockStatementProduction() {
     this.indentationLevel++;
+    let setBackBeforeNewline = this.lookahead.position;
+    this.consume("NEWLINE");
 
     const statements = [];
     let continueLoop = true;
@@ -137,7 +147,21 @@ class Parser {
 
       if (continueLoop && this.lookahead.type !== "INDENTATION") {
         statements.push(this.statementProduction());
+
+        if (this.lookahead !== null) {
+          setBackBeforeNewline = this.lookahead.position;
+          this.consume("NEWLINE");
+        }
       }
+    }
+
+    if (this.lookahead !== null) {
+      this.tokenizer.setBack(
+        setBackBeforeNewline.line,
+        setBackBeforeNewline.column,
+        true
+      );
+      this.lookahead = this.tokenizer.getNextToken();
     }
 
     if (statements.length === 0) {
@@ -314,6 +338,7 @@ class Parser {
       this.lookahead !== null &&
       this.lookahead.type !== "KEYWORD" &&
       this.lookahead.type !== "COMMA" &&
+      this.lookahead.type !== "NEWLINE" &&
       !(this.lookahead.type === "BRACKET" && this.lookahead.value === "]") &&
       !(
         this.consumingCall &&

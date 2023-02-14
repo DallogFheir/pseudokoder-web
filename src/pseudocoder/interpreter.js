@@ -39,6 +39,7 @@ class Interpreter {
 
     const parser = new Parser();
     const ast = parser.parse(code);
+    console.log(ast);
 
     for (const statement of ast.body.statements) {
       this.executeStatement(statement);
@@ -615,12 +616,12 @@ class Interpreter {
       );
     }
 
-    const output =
-      typeof executedStatement === "boolean"
-        ? executedStatement
-          ? "PRAWDA"
-          : "FAŁSZ"
-        : executedStatement;
+    let output;
+    if (typeof executedStatement === "boolean") {
+      output = executedStatement ? "PRAWDA" : "FAŁSZ";
+    } else if (Array.isArray(executedStatement)) {
+      output = [...executedStatement];
+    }
 
     if (this.ifLogOutput) {
       console.log(output);
