@@ -616,7 +616,7 @@ class Interpreter {
       );
     }
 
-    let output;
+    let output = executedStatement;
     if (typeof executedStatement === "boolean") {
       output = executedStatement ? "PRAWDA" : "FAŁSZ";
     } else if (Array.isArray(executedStatement)) {

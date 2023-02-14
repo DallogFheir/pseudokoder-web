@@ -79,7 +79,9 @@ class Parser {
       };
     }
 
-    this.consume("NEWLINE");
+    if (this.tokenizer.hasMoreTokens()) {
+      this.consume("NEWLINE");
+    }
     statements.push(firstStatement);
 
     while (this.tokenizer.hasMoreTokens()) {
