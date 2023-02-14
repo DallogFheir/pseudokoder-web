@@ -2,13 +2,13 @@
   margin: 20px auto;
   padding: 20px;
   width: 500px;
-  height: 460px;
+  height: 350px;
   text-align: center;
   overflow-y: hidden;
 }
 
 .variables {
-  padding: 0 0 200px 0;
+  padding: 0 0 300px 0;
   height: 600px;
   overflow-y: scroll;
 }

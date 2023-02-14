@@ -8,8 +8,12 @@ import { SyntaxError, RuntimeError } from "./pseudocoder/errors";
 import "./App.css";
 
 function App() {
-  const [indexingFrom0, setIndexingFrom0] = useLocalStorage(
-    "indexingFrom0",
+  const [indexingFrom0Arrays, setIndexingFrom0Arrays] = useLocalStorage(
+    "indexingFrom0Arrays",
+    false
+  );
+  const [indexingFrom0Strings, setIndexingFrom0Strings] = useLocalStorage(
+    "indexingFrom0Strings",
     false
   );
   const [output, setOutput] = useState("");
@@ -67,7 +71,8 @@ wypisz T`
       const output = interpreter.execute(
         code,
         prepareVariables(variables),
-        indexingFrom0 ? 0 : 1,
+        indexingFrom0Arrays ? 0 : 1,
+        indexingFrom0Strings ? 0 : 1,
         false
       );
       setOutput(
@@ -131,8 +136,20 @@ wypisz T`
             className="ms-3 form-check-input"
             id="indexing-checkbox"
             type="checkbox"
-            defaultChecked={indexingFrom0}
-            onChange={() => setIndexingFrom0((prevState) => !prevState)}
+            defaultChecked={indexingFrom0Arrays}
+            onChange={() => setIndexingFrom0Arrays((prevState) => !prevState)}
+          />
+        </div>
+        <div className="mt-5 container-misc">
+          <label className="form-label fw-bold" htmlFor="indexing-checkbox">
+            Indeksowanie napisów od 0
+          </label>
+          <input
+            className="ms-3 form-check-input"
+            id="indexing-checkbox"
+            type="checkbox"
+            defaultChecked={indexingFrom0Strings}
+            onChange={() => setIndexingFrom0Strings((prevState) => !prevState)}
           />
         </div>
         <div className="container-misc">

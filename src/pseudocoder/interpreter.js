@@ -2,7 +2,13 @@ import Parser from "./parser.js";
 import { RuntimeError, InternalError } from "./errors.js";
 
 class Interpreter {
-  execute(code, startingBindings = {}, firstIndex = 1, ifLogOutput = true) {
+  execute(
+    code,
+    startingBindings = {},
+    firstIndexArrays = 1,
+    firstIndexStrings = 1,
+    ifLogOutput = true
+  ) {
     const builtins = [
       {
         identifier: "sufit",
@@ -32,7 +38,8 @@ class Interpreter {
       return acc;
     }, {});
     this.callStack = [{ ...startingBindings, ...builtinBindings }];
-    this.firstIndex = firstIndex;
+    this.firstIndexArrays = firstIndexArrays;
+    this.firstIndexStrings = firstIndexStrings;
     this.ifLogOutput = ifLogOutput;
     this.returnValue = null;
     this.output = [];
@@ -130,8 +137,7 @@ class Interpreter {
       case "nie":
         return !this.executeStatement(statement.operand);
       case "[]":
-        const index =
-          this.executeStatement(statement.operator.index) - this.firstIndex;
+        const index = this.executeStatement(statement.operator.index);
         const executedStatement = this.executeStatement(statement.operand);
 
         if (
@@ -147,8 +153,8 @@ class Interpreter {
 
         const result =
           typeof executedStatement === "string"
-            ? executedStatement.charAt(index)
-            : executedStatement[index];
+            ? executedStatement.charAt(index - this.firstIndexStrings)
+            : executedStatement[index - this.firstIndexArrays];
 
         if (result === undefined) {
           throw new RuntimeError(
@@ -404,11 +410,15 @@ class Interpreter {
         );
       }
 
+      const indexAddend =
+        typeof value === "string"
+          ? this.firstIndexStrings
+          : this.firstIndexArrays;
       const index =
-        this.executeStatement(statement.identifier.index) - this.firstIndex;
+        this.executeStatement(statement.identifier.index) - indexAddend;
       if (index < 0) {
         throw new RuntimeError(
-          `Indeks ${index + this.firstIndex} poza długością tablicy/napisu ${
+          `Indeks ${index + indexAddend} poza długością tablicy/napisu ${
             statement.identifier.symbol
           }.`,
           statement.identifier.index.position,
@@ -421,7 +431,7 @@ class Interpreter {
       } else {
         if (index > value.length) {
           throw new RuntimeError(
-            `Indeks ${index + this.firstIndex} poza długością napisu ${
+            `Indeks ${index + indexAddend} poza długością napisu ${
               statement.identifier.symbol
             }.`,
             statement.identifier.index.position,

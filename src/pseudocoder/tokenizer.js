@@ -198,21 +198,6 @@ class Tokenizer {
       };
     }
 
-    // NUMBER
-    const matchedNumber = /^-?\d+(\.\d+)?\b/.exec(this.currentSlice);
-    if (matchedNumber !== null) {
-      this.col += matchedNumber[0].length;
-
-      return {
-        type: "NUMBER",
-        value: matchedNumber[0],
-        position: {
-          line: line,
-          column: col,
-        },
-      };
-    }
-
     // STRING
     if (this.currentSlice[0] === '"') {
       let string = '"';
@@ -262,6 +247,21 @@ class Tokenizer {
       return {
         type: "OPERATOR",
         value: matchedOperator[0],
+        position: {
+          line: line,
+          column: col,
+        },
+      };
+    }
+
+    // NUMBER
+    const matchedNumber = /^-?\d+(\.\d+)?\b/.exec(this.currentSlice);
+    if (matchedNumber !== null) {
+      this.col += matchedNumber[0].length;
+
+      return {
+        type: "NUMBER",
+        value: matchedNumber[0],
         position: {
           line: line,
           column: col,
