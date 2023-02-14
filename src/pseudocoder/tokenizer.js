@@ -5,7 +5,8 @@ class Tokenizer {
     this.lines = code.split("\n").map((line) => line.replace("\t", "    "));
     this.line = 0;
     this._col = 0;
-    this.ifNextLine = false;
+    this.ifNextLine = true;
+    this.ifPreviousIndentation = false;
   }
 
   get col() {
@@ -37,7 +38,7 @@ class Tokenizer {
   }
 
   hasMoreTokens() {
-    return this.line !== this.lines.length && this.lines[0] !== "";
+    return this.line !== this.lines.length;
   }
 
   getNextToken() {
@@ -57,8 +58,12 @@ class Tokenizer {
 
     // indentation
     const matchedIndentation = /^(\t|    )/.exec(this.currentSlice);
-    if (matchedIndentation !== null) {
+    if (
+      matchedIndentation !== null &&
+      (this.ifNextLine || this.ifPreviousIndentation)
+    ) {
       this.col += matchedIndentation[0].length;
+      this.ifPreviousIndentation = true;
 
       return {
         type: "INDENTATION",
@@ -69,6 +74,7 @@ class Tokenizer {
       };
     }
 
+    this.ifPreviousIndentation = false;
     // whitespace or comment
     const matchedWhitespace = /^\s+|^#.*$/.exec(this.currentSlice);
     if (matchedWhitespace !== null) {

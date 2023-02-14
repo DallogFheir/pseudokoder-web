@@ -96,6 +96,11 @@ class Parser {
     }
 
     switch (this.lookahead.type) {
+      case "INDENTATION":
+        throw new SyntaxError(
+          "Nieoczekiwane wcięcie.",
+          this.lookahead.position
+        );
       case "IDENTIFIER":
         return this.assignmentOrCallProduction();
       case "KEYWORD":
@@ -133,6 +138,10 @@ class Parser {
       if (continueLoop && this.lookahead.type !== "INDENTATION") {
         statements.push(this.statementProduction());
       }
+    }
+
+    if (statements.length === 0) {
+      throw new SyntaxError("Oczekiwano bloku kodu.", this.lookahead.position);
     }
 
     this.indentationLevel--;
