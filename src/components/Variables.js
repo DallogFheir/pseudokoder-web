@@ -16,7 +16,7 @@ function Variables({ variables, setVariables }) {
           />
         ))}
         <button
-          className="mt-3 btn btn-success"
+          className="my-3 btn btn-success"
           type="button"
           onClick={() =>
             setVariables((prevState) => [

@@ -137,7 +137,7 @@ wypisz T`
         </div>
         <div className="container-misc">
           <button
-            className="mt-4 btn btn-primary btn-execute fw-bold"
+            className="my-4 btn btn-primary btn-execute fw-bold"
             type="button"
             onClick={execute}
           >

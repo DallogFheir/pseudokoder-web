@@ -1,8 +1,8 @@
 .container-variables {
-  margin: 0 50px;
+  margin: 20px auto;
   padding: 20px;
   width: 500px;
-  height: 500px;
+  height: 460px;
   text-align: center;
   overflow-y: hidden;
 }

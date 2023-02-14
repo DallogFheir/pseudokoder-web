@@ -34,3 +34,9 @@
   outline: none;
   resize: none;
 }
+
+@media screen and (max-width: 920px) {
+  .editor-textarea {
+    width: 20em;
+  }
+}
