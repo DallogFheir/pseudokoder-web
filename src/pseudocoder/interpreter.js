@@ -486,14 +486,6 @@ class Interpreter {
     const step = second - start;
 
     if (step > 0) {
-      if (end < start) {
-        throw new RuntimeError(
-          "Wyrażenie końcowe pętli DLA musi być większe lub równe początkowemu przy dodatnim kroku.",
-          statement.position,
-          this.output
-        );
-      }
-
       for (let i = start; i <= end; i += step) {
         this.callStack.at(-1)[statement.identifier.symbol] = i;
 
@@ -504,14 +496,6 @@ class Interpreter {
         }
       }
     } else if (step < 0) {
-      if (end > start) {
-        throw new RuntimeError(
-          "Wyrażenie końcowe pętli DLA musi być mniejsze lub równe początkowemu przy ujemnym kroku.",
-          statement.position,
-          this.output
-        );
-      }
-
       for (let i = start; i >= end; i += step) {
         this.callStack.at(-1)[statement.identifier.symbol] = i;
 

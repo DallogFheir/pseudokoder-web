@@ -123,6 +123,15 @@ class Parser {
   }
 
   blockStatementProduction() {
+    if (this.lookahead === null) {
+      this.tokenizer.col--;
+
+      throw new SyntaxError("Oczekiwano bloku kodu.", {
+        line: this.tokenizer.line,
+        column: this.tokenizer.col,
+      });
+    }
+
     this.indentationLevel++;
     let setBackBeforeNewline = this.lookahead.position;
     this.consume("NEWLINE");
@@ -147,7 +156,11 @@ class Parser {
         this.consume("INDENTATION");
       }
 
-      if (continueLoop && this.lookahead.type !== "INDENTATION") {
+      if (
+        continueLoop &&
+        this.lookahead !== null &&
+        this.lookahead.type !== "INDENTATION"
+      ) {
         statements.push(this.statementProduction());
 
         if (
@@ -173,7 +186,12 @@ class Parser {
     }
 
     if (statements.length === 0) {
-      throw new SyntaxError("Oczekiwano bloku kodu.", this.lookahead.position);
+      this.tokenizer.col--;
+
+      throw new SyntaxError("Oczekiwano bloku kodu.", {
+        line: this.tokenizer.line,
+        column: this.tokenizer.col,
+      });
     }
 
     this.indentationLevel--;
