@@ -8,7 +8,8 @@ Interpretator jest reprezentowany przez klasę `Interpreter`. Klasa ta posiada j
 
 - `code`: kod programu jako napis
 - `startingBindings`: początkowo określone zmienne, przekazane jako obiekt zawierający nazwy zmiennych jako klucze, a wartości zmiennych jako wartości; domyślnie pusty obiekt
-- `firstIndex`: indeks, od którego zaczyna się indeksowanie tablic i napisów; domyślnie 1
+- `firstIndexArrays`: indeks, od którego zaczyna się indeksowanie tablic; domyślnie 1
+- `firstIndexStrings`: indeks, od którego zaczyna się indeksowanie napisów; domyślnie 1
 - `ifLogOutput`: czy wyjście programu ma być logowane do konsoli, czy tylko zwracane z metody; domyślnie *false*
 
 Metoda ta zwraca wyjście programu (wyrażenia wypisane przez polecenie WYPISZ) jako tablicę literałów.
@@ -20,6 +21,8 @@ Interpretator może wyrzucić 3 typy błędów:
 - `InternalError`: błąd wewnętrzny, wskazujący na niepoprawne działanie interpretatora
 
 ## Opis języka
+
+Polecenia w języku oddzielane są znakiem nowej linii.
 
 ### Komentarze
 
@@ -123,7 +126,7 @@ prawda <- nie FAŁSZ
 
 ### Blok kodu
 
-Bloki kodu oznaczane są tym samym poziomem wcięcia. Wcięcie może być znakiem tabulacji lub 4 spacjami.
+Bloki kodu oznaczane są tym samym poziomem wcięcia. Wcięcie to 4 spacje.
 
 ```
 jeżeli n > 2 to
