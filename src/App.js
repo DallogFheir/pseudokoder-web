@@ -122,11 +122,11 @@ wypisz T`
 
   return (
     <div className="container-main">
-      <div className="container-side">
+      <div className="container-side container-side-left">
         <CodeEditor code={code} setCode={setCode} />
         <Output output={output} error={error} />
       </div>
-      <div className="container-side">
+      <div className="container-side container-side-right">
         <Variables variables={variables} setVariables={setVariables} />
         <div className="mt-5 container-misc">
           <label className="form-label fw-bold" htmlFor="indexing-checkbox">

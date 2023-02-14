@@ -21,3 +21,13 @@
   width: 100px;
   height: 50px;
 }
+
+@media screen and (max-width: 920px) {
+  .container-side-left {
+    order: 2;
+  }
+
+  .container-side-right {
+    order: 1;
+  }
+}
