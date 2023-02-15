@@ -1,10 +1,21 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./CodeEditor.css";
 
 function CodeEditor({ code, setCode }) {
+  const [insertedTab, setInsertedTab] = useState(false);
   const [numberOfLines, setNumberOfLines] = useState(code.split("\n").length);
   const editorNumbers = useRef();
   const editorTextArea = useRef();
+  const selectionStart = useRef();
+  const selectionEnd = useRef();
+
+  useEffect(() => {
+    if (insertedTab) {
+      editorTextArea.current.selectionStart = selectionStart.current + 4;
+      editorTextArea.current.selectionEnd = selectionEnd.current + 4;
+      setInsertedTab(false);
+    }
+  }, [code, insertedTab]);
 
   const sync = () => {
     editorNumbers.current.scrollTop = editorTextArea.current.scrollTop;
@@ -36,9 +47,12 @@ function CodeEditor({ code, setCode }) {
           if (e.key === "Enter" && e.target.value.split("\n").length === 999) {
             e.preventDefault();
           } else if (e.key === "Tab") {
+            selectionStart.current = editorTextArea.current.selectionStart;
+            selectionEnd.current = editorTextArea.current.selectionEnd;
+            setInsertedTab(true);
             setCode(
               code.substring(0, editorTextArea.current.selectionStart) +
-                "\t" +
+                "    " +
                 code.substring(editorTextArea.current.selectionEnd)
             );
             e.preventDefault();
