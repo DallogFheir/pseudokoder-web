@@ -245,7 +245,6 @@ class Interpreter {
     const rightOperand = this.executeStatement(statement.rightOperand);
     switch (statement.operator.symbol) {
       case "+":
-        console.log(leftOperand, rightOperand);
         if (
           !(
             typeof leftOperand === "number" && typeof rightOperand === "number"
