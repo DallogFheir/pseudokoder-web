@@ -189,6 +189,8 @@ Funkcje tworzą zasięg zmiennych: wszystkie zmienne zadeklarowane w ciele funkc
 
 Funkcja może zwracać wartości. Dokonuje się tego za pomocą słowa kluczowego `zwróć`, po którym następuje wyrażenie, które funkcja zwróci (lub nic, jeżeli funkcja ma nic nie zwracać, a słowo `zwróć` służy tylko do wcześniejszego wyjścia z funkcji).
 
+Funkcja może również rekurencyjnie wywoływać siebie samą. Maksymalny rozmiar stosu to 999.
+
 ```
 funkcja dodaj(a, b)
     zwróć a + b
