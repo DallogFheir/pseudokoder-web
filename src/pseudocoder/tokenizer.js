@@ -255,7 +255,7 @@ class Tokenizer {
     }
 
     // NUMBER
-    const matchedNumber = /^-?\d+(\.\d+)?\b/.exec(this.currentSlice);
+    const matchedNumber = /^\d+(\.\d+)?\b/.exec(this.currentSlice);
     if (matchedNumber !== null) {
       this.col += matchedNumber[0].length;
 

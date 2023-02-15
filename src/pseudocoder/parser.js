@@ -461,7 +461,12 @@ class Parser {
                 tokens[i],
                 tokens[i + 1]
               );
-              tokens.splice(i - 1, 3, binOp);
+
+              if (binOp.type === "NumericLiteral") {
+                tokens.splice(i, 2, binOp);
+              } else {
+                tokens.splice(i - 1, 3, binOp);
+              }
             }
             break;
           }
@@ -494,6 +499,14 @@ class Parser {
   }
 
   binaryOperationProduction(leftOperand, operator, rightOperand) {
+    if (leftOperand === undefined && operator.symbol === "-") {
+      return {
+        type: "NumericLiteral",
+        value: -rightOperand.value,
+        position: operator.position,
+      };
+    }
+
     return {
       type: "BinaryOperation",
       leftOperand,
