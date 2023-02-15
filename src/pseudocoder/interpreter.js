@@ -1,5 +1,5 @@
 import Parser from "./parser.js";
-import { RuntimeError, InternalError } from "./errors.js";
+import { RuntimeError, BuiltinFunctionError, InternalError } from "./errors.js";
 
 class Interpreter {
   execute(
@@ -19,6 +19,32 @@ class Interpreter {
         identifier: "podloga",
         parameters: ["liczba"],
         function: Math.floor,
+      },
+      {
+        identifier: "dl",
+        parameters: ["tablica"],
+        function: (tablica) => {
+          if (typeof tablica !== "string" && !Array.isArray(tablica)) {
+            throw new BuiltinFunctionError(
+              "Argumentem funkcji dl musi być tablica lub napis."
+            );
+          }
+
+          return tablica.length;
+        },
+      },
+      {
+        identifier: "napis",
+        parameters: ["liczba"],
+        function: (liczba) => {
+          if (typeof liczba !== "number") {
+            throw new BuiltinFunctionError(
+              "Argument funkcji napis musi być liczba."
+            );
+          }
+
+          return String(liczba);
+        },
       },
     ];
 
@@ -219,12 +245,15 @@ class Interpreter {
     const rightOperand = this.executeStatement(statement.rightOperand);
     switch (statement.operator.symbol) {
       case "+":
+        console.log(leftOperand, rightOperand);
         if (
-          typeof leftOperand !== "number" ||
-          typeof rightOperand !== "number"
+          !(
+            typeof leftOperand === "number" && typeof rightOperand === "number"
+          ) &&
+          !(typeof leftOperand === "string" && typeof rightOperand === "string")
         ) {
           throw new RuntimeError(
-            "Operacje arytmetyczne można wykonywać tylko na liczbach.",
+            "Operację dodawania można wykonać tylko albo na liczbach, albo na napisach.",
             statement.position
           );
         }
@@ -579,7 +608,15 @@ class Interpreter {
         );
       }
 
-      return value.function(...args);
+      try {
+        return value.function(...args);
+      } catch (err) {
+        if (err instanceof BuiltinFunctionError) {
+          throw new RuntimeError(err.message, statement.identifier.position);
+        }
+
+        throw new InternalError(err.message);
+      }
     } else if (value.type === "user-defined") {
       const localBindings = statement.arguments.reduce((acc, curr, idx) => {
         acc[value.parameters.parameters[idx].symbol] =

@@ -6,7 +6,7 @@ class Parser {
     this.ifNextLine = false;
     this.indentationLevel = 0;
     this.definingFunction = false;
-    this.consumingCall = false;
+    this.consumingCall = 0;
     this.tokenTrans = {
       INDENTATION: "wcięcie",
       IDENTIFIER: "zmienna",
@@ -212,7 +212,7 @@ class Parser {
   }
 
   callProduction(identifier) {
-    this.consumingCall = true;
+    this.consumingCall++;
     const firstParen = this.consume("PARENTHESIS");
 
     const argumentList = [];
@@ -233,7 +233,7 @@ class Parser {
 
     this.consume("PARENTHESIS");
 
-    this.consumingCall = false;
+    this.consumingCall--;
     return {
       type: "Call",
       identifier: {
@@ -367,7 +367,7 @@ class Parser {
       this.lookahead.type !== "NEWLINE" &&
       !(this.lookahead.type === "BRACKET" && this.lookahead.value === "]") &&
       !(
-        this.consumingCall &&
+        this.consumingCall !== 0 &&
         this.lookahead.type === "PARENTHESIS" &&
         this.lookahead.value === ")"
       )
@@ -382,12 +382,21 @@ class Parser {
       );
     }
 
-    if (parensNumber !== 0 && !this.consumingCall) {
+    if (parensNumber !== 0 && this.consumingCall === 0) {
+      this.tokenizer.col--;
+
       throw new SyntaxError(
         `Oczekiwano zamknięcia nawiasu okrągłego, znaleziono: ${
-          this.tokenTrans[this.lookahead.type]
+          this.lookahead === null
+            ? "koniec wejścia"
+            : this.tokenTrans[this.lookahead.type]
         }.`,
-        this.lookahead.position
+        this.lookahead === null
+          ? {
+              line: this.tokenizer.line,
+              column: this.tokenizer.col,
+            }
+          : this.lookahead.position
       );
     }
 

@@ -17,6 +17,8 @@ class RuntimeError extends PseudocoderError {
   }
 }
 
+class BuiltinFunctionError extends Error {}
+
 class InternalError extends Error {}
 
-export { SyntaxError, RuntimeError, InternalError };
+export { SyntaxError, RuntimeError, BuiltinFunctionError, InternalError };

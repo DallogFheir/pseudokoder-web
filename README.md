@@ -77,7 +77,7 @@ napis[3] <- "ń"
 Dostępne są następujące operatory arytmetyczne:
 
 - I grupa
-  - `+`
+  - `+`: dodawanie, konkatenacja napisów
   - `-`
 - II grupa
   - `*`
@@ -204,8 +204,11 @@ Następujące funkcje są wbudowane w język:
 
 - `sufit(liczba)`: zaokrągla liczbę w górę do najbliższej liczby całkowitej
 - `podloga(liczba)`: zaokrągla liczbę w dół do najbliższej liczby całkowitej
+- `dl(tablica)`: zwraca długość tablicy lub napisu
+- `napis(liczba)`: zwraca liczbę jako napis
 
 ```
 wypisz sufit(3.14)
 wypisz podloga(3.14)
+wypisz dl(napis(123))
 ```
