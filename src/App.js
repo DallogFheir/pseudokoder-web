@@ -79,7 +79,15 @@ wypisz T`
         output
           .map((el) => {
             if (Array.isArray(el)) {
-              return `[${el.join(", ")}]`;
+              return `[${el
+                .map((subel) => {
+                  if (typeof subel === "boolean") {
+                    subel = subel ? "PRAWDA" : "FAŁSZ";
+                  }
+
+                  return subel;
+                })
+                .join(", ")}]`;
             }
 
             return el;
@@ -99,7 +107,15 @@ wypisz T`
           err.output
             .map((el) => {
               if (Array.isArray(el)) {
-                return `[${el.join(", ")}]`;
+                return `[${el
+                  .map((subel) => {
+                    if (typeof subel === "boolean") {
+                      subel = subel ? "PRAWDA" : "FAŁSZ";
+                    }
+
+                    return subel;
+                  })
+                  .join(", ")}]`;
               }
 
               return el;

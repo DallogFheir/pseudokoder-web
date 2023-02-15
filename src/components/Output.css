@@ -19,3 +19,9 @@
 .output-error {
   color: red;
 }
+
+@media screen and (max-width: 920px) {
+  .output {
+    margin-bottom: 40px;
+  }
+}
