@@ -13,37 +13,53 @@ class Interpreter {
       {
         identifier: "sufit",
         parameters: ["liczba"],
-        function: Math.ceil,
+        function: (number) => {
+          if (typeof number !== "number") {
+            throw new BuiltinFunctionError(
+              "Argumentem funkcji sufit musi być liczba."
+            );
+          }
+
+          return Math.ceil(number);
+        },
       },
       {
         identifier: "podloga",
         parameters: ["liczba"],
-        function: Math.floor,
+        function: (number) => {
+          if (typeof number !== "number") {
+            throw new BuiltinFunctionError(
+              "Argumentem funkcji podloga musi być liczba."
+            );
+          }
+
+          return Math.floor(number);
+        },
       },
       {
         identifier: "dl",
         parameters: ["tablica"],
-        function: (tablica) => {
-          if (typeof tablica !== "string" && !Array.isArray(tablica)) {
+        function: (array) => {
+          if (typeof array !== "string" && !Array.isArray(array)) {
             throw new BuiltinFunctionError(
               "Argumentem funkcji dl musi być tablica lub napis."
             );
           }
 
-          return tablica.length;
+          return array.length;
         },
       },
       {
         identifier: "napis",
         parameters: ["liczba"],
-        function: (liczba) => {
-          if (typeof liczba !== "number") {
+        function: (number) => {
+          if (typeof number !== "number") {
             throw new BuiltinFunctionError(
               "Argument funkcji napis musi być liczba."
             );
           }
 
-          return String(liczba);
+          return String(number);
         },
       },
     ];
