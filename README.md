@@ -120,8 +120,11 @@ Dostępne są następujące operatory logiczne:
 
 Operatory te są "słabsze" od operatorów porównania oraz arytmetycznych, natomiast ich kolejność została podana od "najsłabszego" do "najsilniejszego" (tzn. operator `nie` jest najsilniejszy).
 
+Operatory `lub` oraz `oraz` podlegają *short-circuit evaluation*, tzn. jeśli pierwsze wyrażenie w klauzuli `lub` jest prawdziwe/w klauzuli `oraz` jest fałszywe, to drugie wyrażenie nie jest już ewaluowane.
+
 ```
 prawda <- nie FAŁSZ
+nie_wyrzuca_bledu <- FAŁSZ oraz nieistniejaca_zmienna
 ```
 
 ### Blok kodu
