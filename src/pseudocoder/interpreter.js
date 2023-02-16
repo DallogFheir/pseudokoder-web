@@ -387,26 +387,18 @@ class Interpreter {
 
         return leftOperand <= rightOperand;
       case "==":
-        if (
-          typeof leftOperand !== typeof rightOperand ||
-          typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
-        ) {
+        if (typeof leftOperand !== typeof rightOperand) {
           throw new RuntimeError(
-            "Porównywać można tylko albo liczby, albo napisy.",
+            "Porównywać można tylko wartości tego samego typu.",
             statement.position
           );
         }
 
         return leftOperand === rightOperand;
       case "!=":
-        if (
-          typeof leftOperand !== typeof rightOperand ||
-          typeof leftOperand === "boolean" ||
-          typeof rightOperand === "boolean"
-        ) {
+        if (typeof leftOperand !== typeof rightOperand) {
           throw new RuntimeError(
-            "Porównywać można tylko albo liczby, albo napisy.",
+            "Porównywać można tylko wartości tego samego typu.",
             statement.position
           );
         }

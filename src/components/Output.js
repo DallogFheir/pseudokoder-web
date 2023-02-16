@@ -5,7 +5,7 @@ function Output({ output, error }) {
   if (error !== null) {
     if (typeof error === "object") {
       const line = error.lines[error.line - 1];
-      const pointer = " ".repeat(error.column) + "^";
+      const pointer = " ".repeat(error.column - 1) + "^";
 
       fullMessage =
         line === undefined
