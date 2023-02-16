@@ -8,9 +8,9 @@ Interpretator jest reprezentowany przez klasę `Interpreter`. Klasa ta posiada j
 
 - `code`: kod programu jako napis
 - `startingBindings`: początkowo określone zmienne, przekazane jako obiekt zawierający nazwy zmiennych jako klucze, a wartości zmiennych jako wartości; domyślnie pusty obiekt
+- `ifLogOutput`: czy wyjście programu ma być logowane do konsoli, czy tylko zwracane z metody; domyślnie *false*
 - `firstIndexArrays`: indeks, od którego zaczyna się indeksowanie tablic; domyślnie 1
 - `firstIndexStrings`: indeks, od którego zaczyna się indeksowanie napisów; domyślnie 1
-- `ifLogOutput`: czy wyjście programu ma być logowane do konsoli, czy tylko zwracane z metody; domyślnie *false*
 
 Metoda ta zwraca wyjście programu (wyrażenia wypisane przez polecenie WYPISZ) jako tablicę literałów.
 

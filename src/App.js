@@ -71,9 +71,9 @@ wypisz T`
       const output = interpreter.execute(
         code,
         prepareVariables(variables),
+        false,
         indexingFrom0Arrays ? 0 : 1,
-        indexingFrom0Strings ? 0 : 1,
-        false
+        indexingFrom0Strings ? 0 : 1
       );
       setOutput(
         output

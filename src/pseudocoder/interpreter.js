@@ -5,9 +5,9 @@ class Interpreter {
   execute(
     code,
     startingBindings = {},
-    firstIndexArrays = 1,
+    ifLogOutput = true,
     firstIndexStrings = 1,
-    ifLogOutput = true
+    firstIndexArrays = 1
   ) {
     const builtins = [
       {
