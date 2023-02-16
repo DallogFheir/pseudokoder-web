@@ -4,7 +4,7 @@ class PseudocoderError extends Error {
       `Wiersz ${position.line + 1}, kolumna ${position.column + 1}: ${message}`
     );
     this.line = position.line + 1;
-    this.column = position.column;
+    this.column = position.column + 1;
   }
 }
 
