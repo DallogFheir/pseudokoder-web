@@ -58,7 +58,7 @@ class Tokenizer {
     const col = this.col;
 
     // new line
-    if (this.ifNextLine && this.lines[this.line] !== "") {
+    if (this.ifNextLine && this.lines[this.line].trim() !== "") {
       this.ifNextLine = false;
       this.ifPreviousNextLine = true;
 
