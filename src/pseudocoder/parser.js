@@ -217,9 +217,21 @@ class Parser {
 
     const argumentList = [];
     let consumedComma;
-    while (this.lookahead.type !== "PARENTHESIS") {
+    while (this.lookahead !== null && this.lookahead.type !== "PARENTHESIS") {
       consumedComma = false;
       argumentList.push(this.expressionProduction());
+
+      if (this.lookahead === null) {
+        this.tokenizer.col--;
+
+        throw new SyntaxError(
+          "Nieoczekiwany koniec wejścia, oczekiwano: nawias okrągły.",
+          {
+            line: this.tokenizer.line,
+            column: this.tokenizer.col,
+          }
+        );
+      }
 
       if (this.lookahead.type !== "PARENTHESIS") {
         consumedComma = true;

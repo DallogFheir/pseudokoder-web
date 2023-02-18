@@ -215,16 +215,20 @@ class Tokenizer {
             this.col--;
             throw new SyntaxError(
               "Nieoczekiwany koniec wejścia. Oczekiwano zamknięcia napisu.",
-              this.line,
-              this.col
+              {
+                line: this.line,
+                column: this.col,
+              }
             );
           }
 
           this.col--;
           throw new SyntaxError(
             "Nieoczekiwany koniec linii. Oczekiwano zamknięcia napisu.",
-            this.line,
-            this.col
+            {
+              line: this.line,
+              column: this.col,
+            }
           );
         }
       }
