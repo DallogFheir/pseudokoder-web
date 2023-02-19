@@ -5,7 +5,7 @@ class Parser {
   constructor() {
     this.ifNextLine = false;
     this.indentationLevel = 0;
-    this.definingFunction = false;
+    this.definingFunction = 0;
     this.consumingCall = 0;
     this.tokenTrans = {
       INDENTATION: "wcięcie",
@@ -769,17 +769,16 @@ class Parser {
   returnProduction() {
     const returnKeyword = this.consume("KEYWORD");
 
-    if (!this.definingFunction) {
+    if (this.definingFunction === 0) {
       throw new SyntaxError(
         "Słowo kluczowe ZWRÓĆ poza funkcją.",
         returnKeyword.position
       );
     }
 
+    debugger;
     const expression =
-      this.lookahead.type === "INDENTATION"
-        ? null
-        : this.expressionProduction();
+      this.lookahead.type === "NEWLINE" ? null : this.expressionProduction();
     return {
       type: "Return",
       value: expression,
@@ -790,10 +789,10 @@ class Parser {
     const functionKeyword = this.consume("KEYWORD");
     const functionName = this.consume("IDENTIFIER");
     const parameters = this.parameterListProduction();
-    this.definingFunction = true;
+    this.definingFunction++;
     const body = this.blockStatementProduction();
 
-    this.definingFunction = false;
+    this.definingFunction--;
     return {
       type: "Function",
       identifier: {
