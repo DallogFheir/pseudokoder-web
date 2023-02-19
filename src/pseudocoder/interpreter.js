@@ -55,7 +55,7 @@ class Interpreter {
         function: (number) => {
           if (typeof number !== "number") {
             throw new BuiltinFunctionError(
-              "Argument funkcji napis musi być liczba."
+              "Argumentem funkcji napis musi być liczba."
             );
           }
 
