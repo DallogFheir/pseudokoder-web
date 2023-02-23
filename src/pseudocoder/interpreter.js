@@ -413,9 +413,10 @@ class Interpreter {
 
   executeAssignment(statement) {
     const rightOperand = this.executeStatement(statement.rightOperand);
-    if (rightOperand === null) {
+    console.log(rightOperand);
+    if (rightOperand === null || rightOperand === undefined) {
       throw new RuntimeError(
-        `Funkcja ${statement.rightOperand.identifier.symbol} nic nie zwraca.`,
+        `Funkcja ${statement.rightOperand.identifier.symbol} nic nie zwróciła.`,
         statement.rightOperand.position
       );
     }
@@ -653,9 +654,9 @@ class Interpreter {
   executePrint(statement) {
     const executedStatement = this.executeStatement(statement.value);
 
-    if (executedStatement === undefined) {
+    if (executedStatement === null || executedStatement === undefined) {
       throw new RuntimeError(
-        `Funkcja ${statement.value.identifier.symbol} nic nie zwraca.`,
+        `Funkcja ${statement.value.identifier.symbol} nic nie zwróciła.`,
         statement.value.position
       );
     }
