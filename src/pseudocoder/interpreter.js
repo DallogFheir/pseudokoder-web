@@ -413,7 +413,6 @@ class Interpreter {
 
   executeAssignment(statement) {
     const rightOperand = this.executeStatement(statement.rightOperand);
-    console.log(rightOperand);
     if (rightOperand === null || rightOperand === undefined) {
       throw new RuntimeError(
         `Funkcja ${statement.rightOperand.identifier.symbol} nic nie zwróciła.`,
