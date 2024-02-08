@@ -29,10 +29,9 @@ function CodeEditor({ code, setCode }) {
         cols="5"
         readOnly
         value={[...Array(numberOfLines).keys()]
-          .map((number) => number + 1)
+          .map((number) => String(number + 1).padStart(3))
           .join("\n")}
-        onScroll={sync}
-      ></textarea>
+        onScroll={sync}></textarea>
       <textarea
         className="editor-textarea"
         ref={editorTextArea}
@@ -58,8 +57,7 @@ function CodeEditor({ code, setCode }) {
             e.preventDefault();
           }
         }}
-        onScroll={sync}
-      ></textarea>
+        onScroll={sync}></textarea>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./Variable.css";
 
-function Variable({ variable, variables, setVariables, idx }) {
+function Variable({ variable, variables, setVariables, idx, disabled }) {
   const previousVariableName = useRef(variable.identifier);
   const [variableName, setVariableName] = useState(variable.identifier);
   const [variableType, setVariableType] = useState(variable.type);
@@ -31,8 +31,7 @@ function Variable({ variable, variables, setVariables, idx }) {
       <div className="row">
         <label
           className="form-label fw-bold col-form-label col-6"
-          htmlFor={`variable-name-${idx}`}
-        >
+          htmlFor={`variable-name-${idx}`}>
           Nazwa zmiennej:
         </label>
         <div className="col-6">
@@ -41,6 +40,7 @@ function Variable({ variable, variables, setVariables, idx }) {
             id={`variable-name-${idx}`}
             type="text"
             value={variableName}
+            disabled={disabled}
             onInput={(e) => setVariableName(e.target.value)}
           />
         </div>
@@ -48,8 +48,7 @@ function Variable({ variable, variables, setVariables, idx }) {
       <div className="row">
         <label
           className="variable-label form-label fw-bold col-form-label col-6"
-          htmlFor={`variable-type-${idx}`}
-        >
+          htmlFor={`variable-type-${idx}`}>
           Typ:
         </label>
         <div className="col-6">
@@ -57,8 +56,8 @@ function Variable({ variable, variables, setVariables, idx }) {
             className="form-select variable-form-control"
             id={`variable-type-${idx}`}
             value={variableType}
-            onChange={(e) => setVariableType(e.target.value)}
-          >
+            disabled={disabled}
+            onChange={(e) => setVariableType(e.target.value)}>
             <option value="variable">zwykła zmienna</option>
             <option value="array">tablica</option>
           </select>
@@ -67,8 +66,7 @@ function Variable({ variable, variables, setVariables, idx }) {
       <div className="row">
         <label
           className="variable-label form-label fw-bold col-form-label col-6"
-          htmlFor={`variable-value-${idx}`}
-        >
+          htmlFor={`variable-value-${idx}`}>
           Wartość:
         </label>
         <div className="col-6">
@@ -77,6 +75,7 @@ function Variable({ variable, variables, setVariables, idx }) {
             id={`variable-value-${idx}`}
             type="text"
             value={variableValue}
+            disabled={disabled}
             onInput={(e) => setVariableValue(e.target.value)}
           />
         </div>
@@ -84,14 +83,14 @@ function Variable({ variable, variables, setVariables, idx }) {
       <button
         className="mt-3 btn btn-danger"
         type="button"
+        disabled={disabled}
         onClick={() =>
           setVariables((prevState) => {
             return prevState.filter(
               (variable) => variable.identifier !== variableName
             );
           })
-        }
-      >
+        }>
         Usuń
       </button>
     </div>

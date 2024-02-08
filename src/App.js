@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useLocalStorage from "./hooks/useLocalStorage";
 import CodeEditor from "./components/CodeEditor";
 import Variables from "./components/Variables";
 import Output from "./components/Output";
-import Interpreter from "./pseudocoder/interpreter";
-import { SyntaxError, RuntimeError } from "./pseudocoder/errors";
 import "./App.css";
 
 function App() {
+  const [worker, setWorker] = useState(
+    () => new Worker(new URL("./pseudocoder/worker.js", import.meta.url))
+  );
+  const [executingTimeouts, setExecutingTimeouts] = useState(null);
+
   const [indexingFrom0Arrays, setIndexingFrom0Arrays] = useLocalStorage(
     "indexingFrom0Arrays",
     false
@@ -33,6 +36,20 @@ wypisz T`
     { identifier: "n", type: "variable", value: "10" },
     { identifier: "T", type: "array", value: "1, 10, 4, 1, 2, 3, 1, 2, 11, 5" },
   ]);
+
+  useEffect(() => {
+    const msgListener = (msg) => {
+      const { output, error } = msg.data;
+      setOutput(output);
+      setError(error);
+      executingTimeouts?.forEach((timeout) => clearTimeout(timeout));
+      setExecutingTimeouts(null);
+    };
+
+    worker.addEventListener("message", msgListener);
+
+    return () => worker.removeEventListener("message", msgListener);
+  }, [worker, executingTimeouts]);
 
   const parseVariable = (variable) => {
     const possibleNumber = parseInt(variable);
@@ -65,75 +82,38 @@ wypisz T`
   };
 
   const execute = () => {
-    const interpreter = new Interpreter();
+    worker.postMessage({
+      code,
+      startingBindings: prepareVariables(variables),
+      firstIndexStrings: indexingFrom0Strings ? 0 : 1,
+      firstIndexArrays: indexingFrom0Arrays ? 0 : 1,
+    });
 
-    try {
-      const output = interpreter.execute(
-        code,
-        prepareVariables(variables),
-        false,
-        indexingFrom0Arrays ? 0 : 1,
-        indexingFrom0Strings ? 0 : 1
-      );
-      setOutput(
-        output
-          .map((el) => {
-            if (Array.isArray(el)) {
-              return `[${el
-                .map((subel) => {
-                  if (typeof subel === "boolean") {
-                    subel = subel ? "PRAWDA" : "FAŁSZ";
-                  }
-
-                  return subel;
-                })
-                .join(", ")}]`;
-            }
-
-            return el;
-          })
-          .join("\n")
-      );
-      setError(null);
-    } catch (err) {
-      console.error(err);
-
-      if (err instanceof SyntaxError || err instanceof RuntimeError) {
-        const lines = code
-          .split("\n")
-          .map((line) => line.replace("\t", "    "));
-        const output =
-          err.output &&
-          err.output
-            .map((el) => {
-              if (Array.isArray(el)) {
-                return `[${el
-                  .map((subel) => {
-                    if (typeof subel === "boolean") {
-                      subel = subel ? "PRAWDA" : "FAŁSZ";
-                    }
-
-                    return subel;
-                  })
-                  .join(", ")}]`;
-              }
-
-              return el;
-            })
-            .join("\n");
-
-        setOutput(output || "");
-        setError({
-          lines,
-          line: err.line,
-          column: err.column,
-          message: err.message,
-        });
-      } else {
+    setExecutingTimeouts([
+      setTimeout(() => {
+        setOutput("Wykonywanie");
+      }, 1000),
+      setTimeout(() => {
+        setOutput("Wykonywanie.");
+      }, 2000),
+      setTimeout(() => {
+        setOutput("Wykonywanie..");
+      }, 3000),
+      setTimeout(() => {
+        setOutput("Wykonywanie...");
+      }, 4000),
+      setTimeout(() => {
+        worker.terminate();
+        setWorker(
+          new Worker(new URL("./pseudocoder/worker.js", import.meta.url))
+        );
         setOutput("");
-        setError("Ups, wystąpił nieoczekiwany błąd wewnętrzny.");
-      }
-    }
+        setError(
+          "Wydaje się, że Twój kod wykonuje się zbyt długo. Sprawdź go pod kątem nieskończonych pętli."
+        );
+        setExecutingTimeouts(null);
+      }, 5000),
+    ]);
   };
 
   return (
@@ -143,7 +123,11 @@ wypisz T`
         <Output output={output} error={error} />
       </div>
       <div className="container-side container-side-right">
-        <Variables variables={variables} setVariables={setVariables} />
+        <Variables
+          variables={variables}
+          setVariables={setVariables}
+          disabled={executingTimeouts !== null}
+        />
         <div className="mt-5 container-misc">
           <label className="form-label fw-bold" htmlFor="indexing-checkbox">
             Indeksowanie tablic od 0
@@ -153,6 +137,7 @@ wypisz T`
             id="indexing-checkbox"
             type="checkbox"
             defaultChecked={indexingFrom0Arrays}
+            disabled={executingTimeouts !== null}
             onChange={() => setIndexingFrom0Arrays((prevState) => !prevState)}
           />
         </div>
@@ -165,6 +150,7 @@ wypisz T`
             id="indexing-checkbox"
             type="checkbox"
             defaultChecked={indexingFrom0Strings}
+            disabled={executingTimeouts !== null}
             onChange={() => setIndexingFrom0Strings((prevState) => !prevState)}
           />
         </div>
@@ -173,7 +159,7 @@ wypisz T`
             className="my-5 btn btn-primary btn-execute fw-bold"
             type="button"
             onClick={execute}
-          >
+            disabled={executingTimeouts !== null}>
             Wykonaj
           </button>
         </div>

@@ -1,7 +1,7 @@
 .container-variables {
   margin: 20px auto;
   padding: 20px;
-  width: 500px;
+  max-width: 500px;
   height: 350px;
   text-align: center;
   overflow-y: hidden;
