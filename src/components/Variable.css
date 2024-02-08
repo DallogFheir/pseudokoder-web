@@ -1,7 +1,7 @@
 .variable {
   margin: 20px;
   padding: 40px;
-  width: 400px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -12,5 +12,5 @@
 }
 
 .variable-form-control {
-  width: 150px;
+  width: 8em;
 }
