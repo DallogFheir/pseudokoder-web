@@ -5,10 +5,10 @@ import Variables from "./components/Variables";
 import Output from "./components/Output";
 import "./App.css";
 
+const WORKER_PATH = `${process.env.PUBLIC_URL}/worker.js`;
+
 function App() {
-  const [worker, setWorker] = useState(
-    () => new Worker(new URL("./pseudocoder/worker.js", import.meta.url))
-  );
+  const [worker, setWorker] = useState(() => new Worker(WORKER_PATH));
   const [executingTimeouts, setExecutingTimeouts] = useState(null);
 
   const [indexingFrom0Arrays, setIndexingFrom0Arrays] = useLocalStorage(
@@ -104,9 +104,7 @@ wypisz T`
       }, 4000),
       setTimeout(() => {
         worker.terminate();
-        setWorker(
-          new Worker(new URL("./pseudocoder/worker.js", import.meta.url))
-        );
+        setWorker(new Worker(WORKER_PATH));
         setOutput("");
         setError(
           "Wydaje się, że Twój kod wykonuje się zbyt długo. Sprawdź go pod kątem nieskończonych pętli."

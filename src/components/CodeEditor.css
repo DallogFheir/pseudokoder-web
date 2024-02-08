@@ -41,4 +41,8 @@
     max-width: 20em;
     position: static;
   }
+
+  .editor-numbers {
+    display: none;
+  }
 }

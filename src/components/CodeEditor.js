@@ -29,7 +29,7 @@ function CodeEditor({ code, setCode }) {
         cols="5"
         readOnly
         value={[...Array(numberOfLines).keys()]
-          .map((number) => String(number + 1).padStart(3))
+          .map((number) => number + 1)
           .join("\n")}
         onScroll={sync}></textarea>
       <textarea
