@@ -11,6 +11,7 @@
 .container-side {
   display: flex;
   flex-direction: column;
+  min-width: 40%;
   max-width: 100%;
 }
 
