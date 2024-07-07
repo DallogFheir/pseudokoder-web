@@ -82,6 +82,7 @@ wypisz T`
   };
 
   const execute = () => {
+    setError("");
     worker.postMessage({
       code,
       startingBindings: prepareVariables(variables),
@@ -117,7 +118,11 @@ wypisz T`
   return (
     <div className="container-main">
       <div className="container-side container-side-left">
-        <CodeEditor code={code} setCode={setCode} />
+        <CodeEditor
+          code={code}
+          setCode={setCode}
+          isEnabled={executingTimeouts === null}
+        />
         <Output output={output} error={error} />
       </div>
       <div className="container-side container-side-right">
@@ -139,7 +144,7 @@ wypisz T`
             onChange={() => setIndexingFrom0Arrays((prevState) => !prevState)}
           />
         </div>
-        <div className="mt-5 container-misc">
+        <div className="container-misc">
           <label className="form-label fw-bold" htmlFor="indexing-checkbox">
             Indeksowanie napisów od 0
           </label>
@@ -152,15 +157,15 @@ wypisz T`
             onChange={() => setIndexingFrom0Strings((prevState) => !prevState)}
           />
         </div>
-        <div className="container-misc">
+        <div className="my-5 container-misc">
           <button
-            className="my-5 btn btn-primary btn-execute fw-bold"
+            className="mb-5 btn btn-primary btn-execute fw-bold"
             type="button"
             onClick={execute}
             disabled={executingTimeouts !== null}>
             Wykonaj
           </button>
-          <div className="fs-4">
+          <div className="fs-5">
             <a
               className="link"
               href="https://github.com/DallogFheir/pseudokoder?tab=readme-ov-file#opis-j%C4%99zyka"

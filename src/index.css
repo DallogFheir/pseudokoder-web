@@ -5,10 +5,10 @@
 }
 
 html {
+  height: 100dvh;
   overscroll-behavior: none;
 }
 
-html,
 body,
 #root {
   height: 100%;

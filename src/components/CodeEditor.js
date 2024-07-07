@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./CodeEditor.css";
 
-function CodeEditor({ code, setCode }) {
+function CodeEditor({ code, setCode, isEnabled }) {
   const [insertedTab, setInsertedTab] = useState(false);
   const [numberOfLines, setNumberOfLines] = useState(code.split("\n").length);
   const editorNumbers = useRef();
@@ -38,6 +38,7 @@ function CodeEditor({ code, setCode }) {
         cols="50"
         rows="20"
         value={code}
+        disabled={!isEnabled}
         onInput={(e) => {
           setCode(e.target.value);
           setNumberOfLines(e.target.value.split("\n").length);

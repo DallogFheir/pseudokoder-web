@@ -2,6 +2,7 @@
   margin: 0 50px;
   max-width: 850px;
   max-height: 300px;
+  align-self: stretch;
 }
 
 .output {
@@ -22,8 +23,15 @@
 }
 
 @media screen and (max-width: 920px) {
+  .container-output {
+    width: 80%;
+    align-self: center;
+  }
+
   .output {
-    margin-bottom: 40px;
+    width: 100%;
+    line-height: 1.3em;
+    margin: 0 0 40px 0;
     max-width: 35em;
   }
 }

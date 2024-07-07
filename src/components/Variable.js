@@ -28,13 +28,13 @@ function Variable({ variable, variables, setVariables, idx, disabled }) {
 
   return (
     <div className="variable">
-      <div className="row">
+      <div className="row w-100">
         <label
-          className="form-label fw-bold col-form-label col-6"
+          className="form-label fw-bold col-form-label col-12 col-md-4"
           htmlFor={`variable-name-${idx}`}>
-          Nazwa zmiennej:
+          Nazwa:
         </label>
-        <div className="col-6">
+        <div className="col-12 col-md-8">
           <input
             className="form-control variable-form-control"
             id={`variable-name-${idx}`}
@@ -45,13 +45,13 @@ function Variable({ variable, variables, setVariables, idx, disabled }) {
           />
         </div>
       </div>
-      <div className="row">
+      <div className="row w-100">
         <label
-          className="variable-label form-label fw-bold col-form-label col-6"
+          className="variable-label form-label fw-bold col-form-label col-12 col-md-4"
           htmlFor={`variable-type-${idx}`}>
           Typ:
         </label>
-        <div className="col-6">
+        <div className="col-12 col-md-8">
           <select
             className="form-select variable-form-control"
             id={`variable-type-${idx}`}
@@ -63,13 +63,13 @@ function Variable({ variable, variables, setVariables, idx, disabled }) {
           </select>
         </div>
       </div>
-      <div className="row">
+      <div className="row w-100">
         <label
-          className="variable-label form-label fw-bold col-form-label col-6"
+          className="variable-label form-label fw-bold col-form-label col-12 col-md-4"
           htmlFor={`variable-value-${idx}`}>
           Wartość:
         </label>
-        <div className="col-6">
+        <div className="col-12 col-md-8">
           <input
             className="form-control variable-form-control"
             id={`variable-value-${idx}`}

@@ -18,7 +18,7 @@ function Output({ output, error }) {
 
   return (
     <div className="container-output">
-      <h2 className="fw-bold">Wyjście</h2>
+      <h2 className="text-center fw-bold">Wyjście</h2>
       <div className="output">
         {output !== "" && <p>{output}</p>}
         {error !== null &&
