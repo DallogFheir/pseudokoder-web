@@ -2,6 +2,8 @@
 
 Interpretator pseudokodu używanego na maturze z informatyki.
 
+[Sama implementacja języka](https://github.com/DallogFheir/pseudokoder).
+
 ## Interpretator
 
 Interpretator jest reprezentowany przez klasę `Interpreter`. Klasa ta posiada jedną publiczną metodę: `execute`. Przyjmuje ona następujące argumenty:
