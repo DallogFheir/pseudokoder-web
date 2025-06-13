@@ -1,4 +1,4 @@
-# pseudocoder
+# Pseudokoder (web)
 
 Interpretator pseudokodu używanego na maturze z informatyki.
 
@@ -215,3 +215,4 @@ wypisz sufit(3.14)
 wypisz podloga(3.14)
 wypisz dl(napis(123))
 ```
+
